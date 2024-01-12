@@ -1,0 +1,7 @@
+{
+  "require": {
+    "ext-sqlite3": "*",
+    "ext-curl": "*",
+    "ext-simplexml": "*"
+  }
+}
