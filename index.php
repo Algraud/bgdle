@@ -20,45 +20,62 @@
 <body onload="setupPage()">
 <div id="winScreen" class="container position-absolute frontPage z-3 rounded g-1 d-none">
     <div class="row">
-        <div class="col higher">
-            <span id="winDate">2024-01-01</span>
-        </div>
-        <div class="col-2"></div>
-    </div>
-    <div class="row">
-        <div class="col correct">
-            You guessed the game in <span id="winGuessCounter"></span> guesses! <span id="winHints"></span>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col lower">
-            See you tomorrow for the next game.
-        </div>
-    </div>
-    <div class="row border-top border-bottom" id="winLogin">
-        <div class="col-8">
-            Login to record stats.
-        </div>
         <div class="col">
-            <button class="btn btn-help" type="button" id="winLoginButton">Login</button>
+            <div class="row">
+                <div class="col higher">
+                    <span id="winDate">2024-01-01</span>
+                </div>
+                <div class="col-2"></div>
+            </div>
+            <div class="row">
+                <div class="col correct">
+                    You guessed the game in <span id="winGuessCounter"></span> guesses! <span id="winHints"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col lower">
+                    See you tomorrow for the next game.
+                </div>
+            </div>
+            <div class="row border-top border-bottom" id="winLogin">
+                <div class="col-8">
+                    Login to record stats.
+                </div>
+                <div class="col">
+                    <button class="btn btn-help winSmallerFont" type="button" id="winLoginButton">Login</button>
+                </div>
+            </div>
+            <div class="row border-top border-bottom winSmallerFont d-none" id="winLoggedIn">
+                <div class="col ">
+                    Total Wins: <span id="winTotal"></span>
+                    Streak: <span id="winStreak"></span>
+                </div>
+                <div class="col ">
+                    Average: <span id="winAvgGuesses"></span><span id="winAvgHints"></span>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="row border-top border-bottom d-none" id="winLoggedIn">
-        <div class="col ">
-            Total Wins: <span id="winTotal"></span>
-            Streak: <span id="winStreak"></span>
-        </div>
-        <div class="col ">
-            Average: <span id="winAvgGuesses"></span><span id="winAvgHints"></span>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <button class="btn btn-help" type="button" id="retryButton">Retry</button>
-            <button class="btn btn-help" type="button" id="clipboardButton"><i class="bi-clipboard-fill" id="clipboardIcon"></i></button>
-        </div>
+        <div class="col-2 border-start">
+            <div class="row-cols-1 winSmallerFont">
+                <div class="col p-1">
+                    <button class="btn btn-help" type="button" id="retryButton" title="Retry daily from the start"><i class="bi-arrow-clockwise"></i></button>
+                </div>
+                <div class="col p-1">
+                    <button class="btn btn-help" type="button" id="clipboardButton" title="Copy stats to clipboard"><i class="bi-clipboard-fill" id="clipboardIcon"></i></button>
+                </div>
+                <div class="col p-1">
 
+                </div>
+                <div class="col p-1">
+                    <button class="btn btn-help" type="button" id="spoilerButton" title="Copy guesses to clipboard"><i class="bi-list"></i></button>
+                </div>
+                <div class="col p-1">
+                    <button class="btn btn-help" type="button" id="spoilerDiscordButton" title="Copy guesses to clipboard for Discord"><i class="bi-discord"></i></button>
+                </div>
+            </div>
+        </div>
     </div>
+
 </div>
 <div id="welcomeScreen" class="container position-absolute frontPage z-3 rounded g-1" >
     <div class="row">
