@@ -99,9 +99,12 @@ body{
     background: var(--godaWhite);
 }
 #dateCol{
-    padding-top: 20px;
-    font-size: 24px;
+    padding-top: 10px;
+    font-size: 18px;
     font-weight: bold;
+}
+#title{
+    font-size: 24px;
 }
 #titleCol{
     font-weight: 1000;
@@ -129,14 +132,18 @@ body{
     --bs-btn-active-bg: #{shade-color($godaGreen, 20%)};
     --bs-btn-active-border-color: #{shade-color($godaGreen, 20%)};
 }
-#helpBtn{
+.btn-title{
     font-size: 48px;
     padding: 0 0 0 0;
     --bs-btn-border-width: 2px;
     --bs-btn-border-radius: 1rem;
 }
-#helpIcon{
+.titleBtnIcon{
     display: flex;
+}
+#loginIcon{
+    font-size: 42px;
+    padding: 3px 5px 3px 1px;
 }
 .gameBox{
     border: 2px solid var(--godaBlack);
@@ -195,6 +202,15 @@ body{
 #winScreen{
     width: 400px;
     background: linear-gradient(45deg, var(--godaWhite), var(--godaGradient));
+    margin-top: calc(50vh - 120px);
+    border: 3px solid var(--godaBlack);
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px;
+}
+#loginScreen{
+    width: 400px;
+    background: linear-gradient(90deg, var(--godaWhite), var(--godaGradient));
     margin-top: calc(50vh - 60px);
     border: 3px solid var(--godaBlack);
     font-size: 24px;
@@ -234,4 +250,8 @@ body{
 }
 #hintCounter{
     color: var(--godaBlue)
+}
+#winLoggedIn, #winLogin{
+    padding: 5px;
+    font-size: 16px;
 }

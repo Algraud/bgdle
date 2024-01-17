@@ -8,11 +8,20 @@ class BGdle
     public Database $DB;
     public Collector $COLLECTOR;
     public Comparer $COMPARER;
+
+    public string $sessionUsername = "";
+    public int $userID = 0;
     public function __construct(){
         $this->DB = new Database();
         $this->RANKER = new Ranker();
         $this->COLLECTOR = new Collector($this->DB);
         $this->COMPARER = new Comparer();
+        if(isset($_SESSION['username'])){
+            $this->sessionUsername = $_SESSION['username'];
+        }
+        if(isset($_SESSION['userID'])){
+            $this->userID = $_SESSION['userID'];
+        }
     }
 
     public function setup(): void
@@ -22,6 +31,51 @@ class BGdle
         $daily = $this->RANKER->pickDaily($games);
         $this->DB->insertDaily($daily, date("Ymd"));
         $this->setupFreeplay($games);
+        $this->postStats(date('Ymd',strtotime("-1 days")));
+        $this->DB->deleteRecords();
+    }
+
+    private function postStats($date){
+        $body = array(
+            'username' => 'BGdle',
+            'content' => '',
+        );
+        $body['content'] = $this->gatherStats($date);
+        $ch = curl_init('https://discord.com/api/webhooks/1196946643296206998/yAVi-vRTilB4ML29ziAi-JMgBrS6-W3blnvg4GGCbCLu2wFNeXyrN42DOlccu9HC4qSX');
+        curl_setopt_array($ch, array(
+            CURLOPT_POST => TRUE,
+            CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            ),
+            CURLOPT_POSTFIELDS => json_encode($body)
+        ));
+        $response = curl_exec($ch);
+
+        if($response === FALSE){
+            die(curl_error($ch));
+        }
+    }
+
+    private function gatherStats($date): string{
+        $records = $this->getRecords(session_id(), true, $date);
+        $total = 0;
+        $loggedTotal = 0;
+        $avgGuess = 0;
+        $avgHint = 0;
+        if($records !== null) {
+            foreach ($records as $record) {
+                $total++;
+                if ($record['userID'] !== 0) {
+                    $loggedTotal++;
+                }
+                $avgGuess += $record['guesses'];
+                $avgHint += $record['hints'];
+            }
+        }
+        $prettyDate = date("Y-m-d", strtotime($date));
+        return "On ".$prettyDate.", There were ".$total." games played. ".$loggedTotal." of them were by logged in players. 
+        Average guesses(and hints): ".$avgGuess."(".$avgHint.").";
     }
 
     public function updateGames(): void
@@ -84,5 +138,62 @@ class BGdle
     public function getDailyLetter(int $pos, string $date):string{
         $game = $this->DB->getDailyGame($date);
         return $game->name[$pos];
+    }
+
+    public function attemptLogin(string $isSignup, string $username, string $password, string $email): bool|string
+    {
+        if($isSignup === "true"){
+            $password = password_hash($password, PASSWORD_DEFAULT);
+            if($this->DB->insertUser($username, $password, $email)){
+                session_start();
+                $_SESSION['username'] = $username;
+                $_SESSION['userID'] = $this->DB->loggedInUser;
+                return session_id();
+            }
+        }
+        if($this->DB->checkLogins($username, $password)){
+            session_start();
+            $_SESSION['username'] = $username;
+            $_SESSION['userID'] = $this->DB->loggedInUser;
+            return session_id();
+        }
+        return "";
+    }
+
+    public function getUsername(string $session): string
+    {
+        $this->changeSession($session);
+        return $this->sessionUsername;
+    }
+
+    public function addRecord(int $updateID, string $session, string $date, int $guesses, int $hints): bool|int
+    {
+        if($session !== ""){
+            $this->changeSession($session);
+        }
+        if($updateID !== 0){
+            return $this->DB->updateRecord($updateID, $this->userID);
+        }
+        $this->DB->loggedInUser = $this->userID;
+        return $this->DB->insertRecord($date, $guesses, $hints, $_SERVER['REMOTE_ADDR'], $this->userID);
+    }
+
+    public function getRecords(string $session, bool $all=false, string $date=""){
+        if($session !== "" ){
+            $this->changeSession($session);
+            return json_encode($this->DB->getRecords($this->userID, $all, $date));
+        }
+    }
+
+    private function changeSession(string $session): void
+    {
+        if($session !== session_id()){
+            session_unset();
+            session_destroy();
+            session_id($session);
+            session_start();
+            $this->sessionUsername = $_SESSION['username'];
+            $this->userID = $_SESSION['userID'];
+        }
     }
 }
