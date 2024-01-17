@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google-site-verification" content="WY2i1IxYctQVSUS0M06mLYxBYn5gU712W3eAenWSm28" />
-    <title>BGDLE</title>
+    <title>BGDLE test</title>
     <link rel="icon" href="img/placeholder.png">
     <link href="css/bs/bootstrap.css" rel="stylesheet">
     <script src="js/bs/bootstrap.min.js" ></script>
@@ -13,8 +13,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;1000&display=swap" rel="stylesheet">
-    <link href="css/style.css?66" rel="stylesheet">
-    <script src="js/bgdle.js?61" defer></script>
+    <link href="css/style.css?67" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?<?php echo filemtime('css/style.css') ?>"/>
+    <script src="js/bgdle.js?<?php echo filemtime('js/bgdle.js') ?>" defer></script>
 </head>
 <body onload="setupPage()">
 <div id="winScreen" class="container position-absolute frontPage z-3 rounded g-1 d-none">
@@ -34,6 +35,23 @@
             See you tomorrow for the next game.
         </div>
     </div>
+    <div class="row border-top border-bottom" id="winLogin">
+        <div class="col-8">
+            Login to record stats.
+        </div>
+        <div class="col">
+            <button class="btn btn-help" type="button" id="winLoginButton">Login</button>
+        </div>
+    </div>
+    <div class="row border-top border-bottom d-none" id="winLoggedIn">
+        <div class="col ">
+            Total Wins: <span id="winTotal"></span>
+            Streak: <span id="winStreak"></span>
+        </div>
+        <div class="col ">
+            Average: <span id="winAvgGuesses"></span><span id="winAvgHints"></span>
+        </div>
+    </div>
     <div class="row">
         <div class="col">
             <button class="btn btn-help" type="button" id="retryButton">Retry</button>
@@ -47,6 +65,7 @@
         <div class="col"></div>
         <div class="col-3">
             <button type="button" class="btn btn-help" id="playDailyBtn">Play Daily</button>
+            <button type="button" class="btn btn-help" id="helpCloseBtn">X</button>
         </div>
     </div>
     <div class="row">
@@ -94,6 +113,40 @@
         </div>
         </div>
 </div>
+<div id="loginScreen" class="container position-absolute frontPage z-3 rounded g-1 d-none">
+    <div class="row">
+        <div class="col" id="loginTitle">Login</div>
+    </div>
+    <div class="row">
+        <div class="col higher" id="loginError"></div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label for="usernameField" class="form-label">Username:</label>
+            <input type="text" id="usernameField" class="form-control">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label for="passwordField" class="form-label">Password:</label>
+            <input type="password" id="passwordField" class="form-control">
+        </div>
+    </div>
+    <div class="row d-none" id="emailRow">
+        <div class="col">
+            <label for="emailField" class="form-label">Email(Optional):</label>
+            <input type="email" id="emailField" class="form-control">
+        </div>
+    </div>
+    <div class="row top-buffer">
+        <div class="col">
+            <button type="button" class="btn btn-help" id="changeLoginBtn">Sign-Up instead</button>
+        </div>
+        <div class="col">
+            <button type="button" class="btn btn-help" id="submitLoginBtn">Login</button>
+        </div>
+    </div>
+</div>
 
 <div id="legend">
     <div id="legendTab">
@@ -114,13 +167,24 @@
 <div class="container text-center">
     <div class="row" id="titleRow">
         <div class="col-4" id="dateCol">
-            <span id="title">Daily: 2024-01-03</span>
+            <div class="row">
+                <div class="col">
+                    <span id="title">Daily: 2024-01-03</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <span id="timeLeft">Time Left: 2024-01-03</span>
+                </div>
+            </div>
         </div>
         <div class="col" id="titleCol">
             <span id="titleLetters">BG</span>dle
         </div>
         <div class="col-4" id="helpCol">
-            <button type="button" class="btn btn-help" id="helpBtn"><i class="bi-question-lg" id="helpIcon"></i></button>
+            <span id="usernameTitle" class="correct"></span>
+            <button type="button" class="btn btn-help btn-title" id="loginTitleBtn"><i class="bi-box-arrow-in-right titleBtnIcon" id="loginIcon"></i></button>
+            <button type="button" class="btn btn-help btn-title" id="helpBtn"><i class="bi-question-lg titleBtnIcon" id="helpIcon"></i></button>
         </div>
     </div>
     <div class="row top-buffer">

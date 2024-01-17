@@ -7,7 +7,14 @@ filterObj.attr = ""
 filterObj.value = ""
 let filterUsed = true
 let hints = 0
-
+let loginUsername = ""
+let signup = false;
+let phpSession = "";
+let recordID = 0;
+let won = false;
+let recordAdded = false;
+let searchAjax;
+let timeLeftTimer = 0;
 function setupPage(){
     clearPage();
     setupGameObject("answer", "answerCol")
@@ -21,8 +28,11 @@ function setupPage(){
 function setupEventListeners(){
     let searchBar = document.getElementById("searchBarCol");
     searchBar.addEventListener("input", searchGames)
+    searchBar.addEventListener("keyup", escapeSearch)
     let playDailyBtn = document.getElementById("playDailyBtn")
     playDailyBtn.addEventListener("click", startDaily)
+    let helpCloseBtn = document.getElementById("helpCloseBtn")
+    helpCloseBtn.addEventListener("click", toggleWelcomeScreen)
     let helpBtn = document.getElementById("helpBtn")
     helpBtn.addEventListener("click", toggleWelcomeScreen)
     let legendBtn = document.getElementById("legendTab")
@@ -31,6 +41,137 @@ function setupEventListeners(){
     retryBtn.addEventListener("click", retryDaily)
     let clipBtn = document.getElementById("clipboardButton")
     clipBtn.addEventListener("click", creatWinForClipboard)
+    let loginBtn = document.getElementById("loginTitleBtn");
+    loginBtn.addEventListener("click", loginOrOut)
+    let submitLoginButton = document.getElementById("submitLoginBtn")
+    submitLoginButton.addEventListener("click", submitLogin)
+    let changeLoginButton = document.getElementById("changeLoginBtn")
+    changeLoginButton.addEventListener("click", ()=>{toggleLoginChange()})
+}
+
+function escapeSearch(e){
+    if(e.key === "Escape"){
+        clearSearch();
+    }
+}
+
+function submitLogin(){
+    let usernameField = document.getElementById("usernameField")
+    let username = usernameField.value;
+    let passwordField = document.getElementById("passwordField")
+    let password = passwordField.value;
+    let emailField = document.getElementById("emailField");
+    let email = emailField.value;
+    let eleError = document.getElementById("loginError")
+    if(username.includes("'") || username.includes('"') || username.includes(' ')){
+        alert("Username can not contain single, double quotes or spaces");
+        return
+    }
+    if(password.includes("'") || password.includes('"') || password.includes(' ')){
+        alert("Password can not contain single or double quotes or spaces");
+        return
+    }
+    if(email.includes("'") || email.includes('"') || email.includes(' ')){
+        alert("Email can not contain single or double quotes or spaces");
+        return
+    }
+    if(username.length < 4 || password.length < 4){
+        alert("Username and password needs to be at least 4 characters long. Recommended at least 8 in each.")
+        return
+    }
+    //console.log("'" + username + "' - '" + password + "' - '" + email + "' - Signup: " + signup)
+    $.get("main.php?login=" + signup + "&username=" + username + "&password=" + password +
+            "&email=" + email, function (reply) {
+        if(reply !== ""){
+            loginUsername = username;
+            phpSession = reply;
+            usernameField.value = "";
+            password.value = "";
+            email.value = "";
+            eleError.innerHTML = "";
+            updateLogin()
+            toggleLogin();
+            toggleWinLoginRow();
+            saveLocal();
+            if(won){
+                addRecord();
+            }
+        } else {
+            if(signup){
+                eleError.innerHTML = "Username already taken.";
+
+            } else {
+                eleError.innerHTML = "No Username/Password combo found.";
+            }
+        }
+    })
+}
+
+function updateLogin(){
+    let usernameTitle = document.getElementById("usernameTitle")
+    usernameTitle.innerHTML = "Hi " + loginUsername;
+    let loginIcon = document.getElementById("loginIcon");
+    loginIcon.classList.remove("bi-box-arrow-in-right")
+    loginIcon.classList.add("bi-box-arrow-left");
+}
+
+function toggleLoginChange(reset = false){
+    let loginTitle = document.getElementById("loginTitle");
+    let changeLoginBtn = document.getElementById("changeLoginBtn");
+    let submitLoginBtn = document.getElementById("submitLoginBtn");
+    let emailRow = document.getElementById("emailRow")
+    if(reset || loginTitle.innerHTML !== "Login"){
+        loginTitle.innerHTML = "Login"
+        changeLoginBtn.innerHTML = "Sign-up instead"
+        submitLoginBtn.innerHTML = "Login"
+        emailRow.classList.add("d-none")
+        signup=false;
+    } else {
+        loginTitle.innerHTML = "Sign-Up"
+        changeLoginBtn.innerHTML = "Login instead"
+        submitLoginBtn.innerHTML = "Sign-Up"
+        emailRow.classList.remove("d-none")
+        signup=true;
+    }
+}
+function loginOrOut(){
+    if(loginUsername !== ""){
+        //logout
+        loginUsername = "";
+        phpSession = "";
+        let loginIcon = document.getElementById("loginIcon");
+        loginIcon.classList.remove("bi-box-arrow-left");
+        loginIcon.classList.add("bi-box-arrow-in-right")
+        let userTitle = document.getElementById("usernameTitle");
+        userTitle.innerHTML = "";
+        saveLocal()
+        toggleWinLoginRow(true);
+    }
+    else{
+        toggleLoginChange(true)
+        toggleLogin();
+    }
+}
+
+function toggleWinLoginRow(forceLogoutRow){
+    let loginRow = document.getElementById("winLogin")
+    let loggedRow = document.getElementById("winLoggedIn")
+    if(forceLogoutRow || loginRow.classList.contains("d-none")){
+        loginRow.classList.remove("d-none");
+        loggedRow.classList.add("d-none");
+    } else {
+        loggedRow.classList.remove("d-none");
+        loginRow.classList.add("d-none");
+    }
+}
+
+function toggleLogin(){
+    let loginScreen = document.getElementById("loginScreen")
+    if(loginScreen.classList.contains("d-none")){
+        loginScreen.classList.remove("d-none");
+    } else {
+        loginScreen.classList.add("d-none");
+    }
 }
 
 function retryDaily(){
@@ -52,6 +193,8 @@ function saveLocal(){
     localStorage.setItem("dailyDate", dailyDate);
     localStorage.setItem("guessList", JSON.stringify(guessList));
     localStorage.setItem("hints", hints.toString());
+    localStorage.setItem("phpSession", phpSession)
+    localStorage.setItem("recordAdded", recordAdded)
 }
 
 function loadLocal(){
@@ -67,7 +210,20 @@ function loadLocal(){
         guessJson.forEach((guess) =>{
             selectGame(guess);
         })
+        phpSession = localStorage.getItem("phpSession");
+        getUserFromSession();
+        recordAdded = (localStorage.getItem("recordAdded") === "true") ;
     }
+}
+
+function getUserFromSession(){
+    $.get("main.php?session=" + phpSession, (reply) => {
+        if(reply !== ""){
+            loginUsername = reply;
+            updateLogin();
+            toggleWinLoginRow();
+        }
+    })
 }
 
 function toggleWelcomeScreen(){
@@ -115,6 +271,32 @@ function updateDate(forceChange = false){
 
     }
     ele.innerHTML = "Daily: " + dailyDate;
+    if(timeLeftTimer !== 0){
+        clearInterval(timeLeftTimer);
+    }
+    timeLeftTimer = setInterval(updateTimeLeft, 1000);
+}
+
+function updateTimeLeft(){
+    let ele = document.getElementById("timeLeft");
+    let cd = new Date();
+    let goalDate = new Date(Date.UTC(cd.getFullYear(), cd.getMonth(), cd.getDate() + 1));
+    let difference = goalDate-cd;
+    let hours = Math.floor(difference / (1000*60*60));
+    let mins = Math.floor((difference % (1000*60*60)) / (1000*60));
+    let secs = Math.floor((difference % (1000*60)) / 1000)
+    if(hours < 10){
+        hours = "0" + hours;
+    }
+    if(mins < 10){
+        mins = "0" + mins;
+    }
+    if(secs < 10){
+        secs = "0" + secs;
+    }
+
+    //console.log(goalDate);
+    ele.innerHTML = "Time Left: "+hours+":"+mins+":"+secs;
 }
 
 function clearPage(){
@@ -125,6 +307,9 @@ function clearPage(){
 }
 
 function clearSearch(){
+    if(searchAjax !== undefined){
+        searchAjax.abort();
+    }
     let ele = document.getElementById("searchResults");
     ele.innerHTML = ""
     ele.classList.add("d-none")
@@ -139,7 +324,10 @@ function searchGames(event){
         return
     }
     if(filterObj.attr === "" || filterObj.value === "") {
-        $.getJSON("main.php?search=" + searchstring, setSearchedGames);
+        if(searchAjax !== undefined){
+            searchAjax.abort();
+        }
+        searchAjax =  $.getJSON("main.php?search=" + searchstring, setSearchedGames);
     }
     else{
 
@@ -151,7 +339,10 @@ function searchGames(event){
         url += "&attr=" + filterObj.attr;
         url += "&value=" + filterObj.value;
         //console.log(url)
-        $.getJSON(url , setSearchedGames);
+        if(searchAjax !== undefined){
+            searchAjax.abort();
+        }
+        searchAjax =  $.getJSON(url , setSearchedGames);
     }
 }
 
@@ -223,9 +414,9 @@ function selectGame(game){
         return
     }
     guessList.push(game)
-    let counter = guessList.length - 1
-    setupGameObject("guess" + counter, "guessesCol", game)
+    let counter = guessList.length - 1;
     $.getJSON("main.php?request&game=" + game.id + "&date=" + dailyDate.replaceAll("-", ""), (json) => {
+        setupGameObject("guess" + counter, "guessesCol", game)
         compareGame(json, counter)
     })
     //console.log(guessList);
@@ -253,7 +444,7 @@ function compareGame(comparisonJson, guessCounter){
     saveLocal()
 }
 
-function updateGuessCounter(counter){
+function updateGuessCounter(){
     let ele = document.getElementById("guessCounter")
     ele.innerHTML = guessList.length.toString()
 }
@@ -271,16 +462,75 @@ function checkWin(guessCounter){
         checkUnveilTitle();
         return
     }
+    win(guessCounter);
+}
+function win(guessCounter){
+    won = true;
     getImageUrl("answerimage", guessList[guessList.length-1].id)
     updateName("answername", guessList[guessList.length-1].name)
     updateWinPage(guessCounter);
+    addRecord()
+}
+
+function addRecord(){
+    if(!recordAdded || loginUsername !== "") {
+        $.get("main.php?record=" + recordID + "&session=" + phpSession + "&date=" + getConvertedDate() +
+            "&guesses=" + guessList.length + "&hints=" + hints, (id) => {
+            recordID = id;
+            recordAdded = true;
+            getRecords()
+        })
+    }
+}
+
+function getRecords(){
+    $.getJSON("main.php?records="+phpSession, (rows)=>{
+        //console.log(rows);
+        let avgHint = 0;
+        let total = rows.length;
+        let streak = 0;
+        let avgGuess = 0;
+        let lastDate = datefy(rows[0]['date']);
+        let streakGoing = true;
+        rows.forEach((record) =>{
+            if(streakGoing || lastDate - datefy(record['date'])){
+                streak++;
+            }
+            avgGuess += parseInt(record['guesses']);
+            avgHint += parseInt(record['hints']);
+        })
+        avgGuess = avgGuess / total;
+        avgHint = avgHint / total;
+        updateWinRecordsRow(total, streak, avgGuess, avgHint);
+    })
+}
+
+function datefy(date){
+    return Date.parse(date.substring(0,4) + "-" + date.substring(4,6) + "-" + date.substring(6))
+}
+
+function updateWinRecordsRow(total, streak, guess, hint){
+    let eleTotal = document.getElementById("winTotal");
+    let eleStreak = document.getElementById("winStreak");
+    let eleAvgGuess = document.getElementById("winAvgGuesses");
+    let eleAvgHint = document.getElementById("winAvgHints");
+    eleTotal.innerHTML = total;
+    eleStreak.innerHTML = streak;
+    eleAvgGuess.innerHTML = guess;
+    eleAvgHint.innerHTML = "(" + hint + ")";
+
+}
+
+function getConvertedDate(){
+    return dailyDate.replaceAll("-", "")
 }
 
 function checkUnveilTitle(){
     if(guessList.length % 10 === 0){
         let letterPos = Math.floor(guessList.length / 10) - 1;
-        $.get("main.php?unveilTitle=" + letterPos + "&date=" + dailyDate.replaceAll("-", ""), function (letter){
+        $.get("main.php?unveilTitle=" + letterPos + "&date=" + getConvertedDate(), function (letter){
             let ele = document.getElementById("answername");
+            /*
             if(ele.innerHTML.length -1 < letterPos){
                 ele.innerHTML += letter
             }
@@ -288,7 +538,8 @@ function checkUnveilTitle(){
                 let firstPart = ele.innerHTML.substring(0, letterPos);
                 let lastPart = ele.innerHTML.substring(letterPos+1);
                 ele.innerHTML = firstPart + letter + lastPart;
-            }
+            }*/
+            ele.innerHTML = letter + ele.innerHTML;
         })
     }
 }
@@ -370,8 +621,10 @@ function updateColorAndIcon(eleID, comparison){
 }
 
 function checkAnswer(attr){
-    knownAnswers[attr] = guessList[guessList.length-1][attr]
-    updateAnswer(attr, "answer" + attr, knownAnswers[attr]);
+    if(knownAnswers[attr] !== guessList[guessList.length-1][attr]) {
+        knownAnswers[attr] = guessList[guessList.length - 1][attr]
+        updateAnswer(attr, "answer" + attr, knownAnswers[attr]);
+    }
 }
 
 function checkAnswerArray(attribute, value, arrCompletion){
@@ -420,7 +673,7 @@ function updateAnswerArray(attribute, value, eleID, array, prog, percent){
 }
 
 function setFilter(ele, attribute, value){
-    console.log(attribute + " = " + value + " - " + ele)
+    //console.log(attribute + " = " + value + " - " + ele)
     let searchbar = document.getElementById("searchInput")
     if(ele === filterEle){
         filterEle = "";
@@ -436,7 +689,7 @@ function setFilter(ele, attribute, value){
         }
         filterEle = ele;
         filterEle.classList.add("filter")
-        searchbar.placeholder = "[Filter: " + value + "] Enter board game name here...";
+        searchbar.placeholder = "[Filter " + attribute + ": " + value + "] Enter board game name here...";
         filterUsed = false
         filterObj.attr = attribute;
         filterObj.value = value;
@@ -611,7 +864,7 @@ function setTitle(prefix, game){
     let titleH = document.createElement("h4")
     let name = document.createElement("span");
     name.id = prefix + "name";
-    name.innerHTML = "???????";
+    name.innerHTML = "?";
     if(game != null){
         name.innerHTML = game.name;
     }
@@ -657,7 +910,7 @@ function updateImageSrc(id, url){
 }
 
 function creatWinForClipboard(){
-    let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on http://www.bgdle.com"
+    let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on https://www.bgdle.com"
     navigator.clipboard.writeText(text);
     let clipIcon = document.getElementById("clipboardIcon")
     if(clipIcon.classList.contains("bi-clipboard-fill")){

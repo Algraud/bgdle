@@ -3,13 +3,16 @@
 namespace Bgdle;
 
 use SQLite3;
+use SQLiteException;
 
 class Database
 {
     private string $FILENAME = "gameData.sqlite";
     public SQLite3 $DB;
+    public int $loggedInUser = 0;
     public function __construct(){
         $this->DB = new SQLite3($this->FILENAME);
+        $this->DB->busyTimeout(1000);
         $this->DB->enableExceptions(true);
         $this->createTables();
     }
@@ -37,6 +40,21 @@ class Database
             "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             "date" VARCHAR,
             "gameID" INTEGER
+        )');
+        $this->DB->query('CREATE TABLE IF NOT EXISTS "users" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "username" VARCHAR,
+            "password" VARCHAR,
+            "email" VARCHAR,
+            "banned" INTEGER
+        )');
+        $this->DB->query('CREATE TABLE IF NOT EXISTS "records" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "userID" INTEGER,
+            "date" VARCHAR,
+            "guesses" INTEGER,
+            "hints" INTEGER,
+            "ip" VARCHAR
         )');
     }
 
@@ -75,7 +93,7 @@ class Database
             $row['minplaytime'],$row['maxplaytime'],$row['minage'],
             explode(";", $row['categories']),explode(";",$row['mechanics']),
             explode(";",$row['designers']), explode(";", $row['artists']),
-            $row['publisher'], $row['description']);
+            $row['publisher']);
     }
 
     public function getDailyGame($date):Game|false{
@@ -118,4 +136,119 @@ class Database
         //print_r($games);
         return $games;
     }
+
+    public function insertUser(string $username, string $password, string $email):bool{
+        $result = $this->DB->query('SELECT * FROM users WHERE username="'.$username.'"');
+        if(!$result->fetchArray()){ //if no row to fetch
+            $pattern = "(username, password, email)";
+            $values = "('". $username . "', '" . $password . "', '" . $email . "')";
+            $sql = 'INSERT INTO users '.$pattern.' VALUES '.$values;
+            //echo $sql;
+            try {
+                $this->DB->query($sql);
+
+            } catch (SQLiteException){
+                //echo "error";
+                return false;
+            }
+            $this->loggedInUser = $this->DB->lastInsertRowID();
+            return true;
+        }
+        return false;
+    }
+
+    public function checkLogins(string $username, string $password): bool
+    {
+        $result = $this->DB->query('SELECT * FROM users WHERE username="'.$username.'"');
+        $user = $result->fetchArray();
+        if(!$user) {
+            return false;
+        }
+        if(password_verify($password, $user['password'])){
+            $this->loggedInUser = $user['id'];
+            return true;
+        }
+        return false;
+    }
+
+    public function insertRecord( string $date, int $guesses, int $hints, string $ip, int $user): bool|int
+    {
+        if($this->loggedInUser !== 0){
+            $result = $this->DB->query('SELECT * FROM records WHERE userID="'.$user.'" AND date="'.$date.'"');
+        }
+        else {
+            $result = $this->DB->query('SELECT * FROM records WHERE ip="'.$ip.'" AND date="'.$date.'"');
+        }
+        if(!$result->fetchArray()){ //if no row to fetch
+            $pattern = "(userID, date, guesses, hints, ip)";
+            $values = "('". $user . "', '" . $date . "', '" . $guesses . "', '" . $hints . "', '" . $ip ."')";
+            $sql = 'INSERT INTO records '.$pattern.' VALUES '.$values;
+            //echo $sql;
+            try {
+                $this->DB->query($sql);
+
+            } catch (\Exception ){
+                //echo "error";
+                return false;
+            }
+            return $this->DB->lastInsertRowID();
+        }
+        return false;
+    }
+
+    public function updateRecord(int $id, int $user): bool
+    {
+        $sql = "UPDATE records SET userID='".$user."' WHERE id='".$id."'";
+        try {
+            $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        return true;
+    }
+
+    public function getRecords(int $user, $all, $date): bool|array
+    {
+        $sql = "SELECT * FROM records";
+        if(!$all){
+            $sql .= " WHERE userID='".$user."'";
+            if($date !== ""){
+                $sql .= " AND date='".$date."'";
+            }
+        }
+        else if($date !== ""){
+            $sql .= " WHERE date='".$date."'";
+        }
+        $sql .= " ORDER BY date DESC";
+        try {
+            $result = $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        $records = [];
+        while($recordSql = $result->fetchArray()){
+            $records[] = $recordSql;
+        }
+        return $records;
+    }
+
+    public function deleteRecords(bool $allRecords=false){
+        $sql = "DELETE FROM records";
+        if(!$allRecords){
+            $sql .= " WHERE userID = '0'";
+        }
+        try {
+            $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        return true;
+    }
+
 }

@@ -1,1 +1,4 @@
-DirectoryIndex index.html
+DirectoryIndex index.php
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://test.bgdle.com/$1 [L,R=301]

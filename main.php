@@ -31,3 +31,16 @@ if(isset($_GET['imglink'])){
 if(isset($_GET['unveilTitle'])){
     echo $main->getDailyLetter($_GET["unveilTitle"], $_GET['date']);
 }
+if(isset($_GET['login'])){
+    echo $main->attemptLogin($_GET['login'], $_GET['username'],
+                            $_GET['password'], $_GET['email']);
+}
+if(isset($_GET['session'])){
+    echo $main->getUsername($_GET['session']);
+}
+if(isset($_GET['record'])){
+    echo $main->addRecord((int)$_GET['record'],$_GET['session'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
+}
+if(isset($_GET['records'])){
+    echo $main->getRecords($_GET['records']);
+}
