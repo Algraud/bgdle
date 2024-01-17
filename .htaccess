@@ -1,4 +1,4 @@
 DirectoryIndex index.php
-RewriteEngine On
+RewriteEngine Off
 RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://www.bgdle.com/$1 [L,R=301]
+RewriteRule ^(.*)$ https://www.bgdle.com/$1 [R,L]
