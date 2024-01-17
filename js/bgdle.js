@@ -40,9 +40,15 @@ function setupEventListeners(){
     let retryBtn = document.getElementById("retryButton")
     retryBtn.addEventListener("click", retryDaily)
     let clipBtn = document.getElementById("clipboardButton")
-    clipBtn.addEventListener("click", creatWinForClipboard)
+    clipBtn.addEventListener("click", createWinForClipboard)
+    let spoilBtn = document.getElementById("spoilerButton")
+    spoilBtn.addEventListener("click", createSpoilerForClipboard)
+    let spoilDiscordBtn = document.getElementById("spoilerDiscordButton")
+    spoilDiscordBtn.addEventListener("click", createSpoilerForClipboard)
     let loginBtn = document.getElementById("loginTitleBtn");
     loginBtn.addEventListener("click", loginOrOut)
+    let loginWinBtn = document.getElementById("winLoginButton");
+    loginWinBtn.addEventListener("click", loginOrOut)
     let submitLoginButton = document.getElementById("submitLoginBtn")
     submitLoginButton.addEventListener("click", submitLogin)
     let changeLoginButton = document.getElementById("changeLoginBtn")
@@ -909,7 +915,7 @@ function updateImageSrc(id, url){
     }
 }
 
-function creatWinForClipboard(){
+function createWinForClipboard(){
     let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on https://www.bgdle.com"
     navigator.clipboard.writeText(text);
     let clipIcon = document.getElementById("clipboardIcon")
@@ -925,6 +931,29 @@ function creatWinForClipboard(){
         }, 3000);
     }
 }
+function createSpoilerForClipboard(e){
+    let text = "!SPOILER! BGdle: " + dailyDate + " guesses: "
+    let clipBtn = e.currentTarget;
+    if(clipBtn.id === "spoilerDiscordButton"){
+        text += "||";
+    }
+    guessList.forEach((guess)=>{
+        text += guess.name + " >>> ";
+    })
+    text = text.slice(0,-4);
+    if(clipBtn.id === "spoilerDiscordButton"){
+        text += "||";
+    }
+    navigator.clipboard.writeText(text);
+    if(!clipBtn.classList.contains("greenBG")) {
+        clipBtn.classList.add("greenBG");
+        setTimeout(function () {
+            clipBtn.classList.remove("greenBG");
+        }, 3000);
+    }
+}
+
+
 
 const Comparison = {
     A_LOT_LOWER: -2,
