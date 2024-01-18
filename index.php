@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google-site-verification" content="WY2i1IxYctQVSUS0M06mLYxBYn5gU712W3eAenWSm28" />
-    <title>BGDLE test</title>
+    <title>BGDLE</title>
     <link rel="icon" href="img/placeholder.png">
     <link href="css/bs/bootstrap.css" rel="stylesheet">
     <script src="js/bs/bootstrap.min.js" ></script>
