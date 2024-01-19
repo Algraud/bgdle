@@ -98,10 +98,10 @@ function submitLogin(){
             password.value = "";
             email.value = "";
             eleError.innerHTML = "";
+            saveLocal();
             updateLogin()
             toggleLogin();
             toggleWinLoginRow();
-            saveLocal();
             if(won){
                 addRecord();
                 toggleWinPage()
@@ -203,19 +203,21 @@ function saveLocal(){
 
 function loadLocal(){
     if(localStorage.getItem("dailyDate") === new Date().toJSON().slice(0, 10)){
+        console.log("Loading...")
         dailyDate = localStorage.getItem("dailyDate")
         hints = parseInt(localStorage.getItem("hints"));
         if(isNaN(hints)){
             hints = 0;
         }
         updateHintCounter(0);
+
+        phpSession = localStorage.getItem("phpSession");
+        getUserFromSession();
+        recordAdded = (localStorage.getItem("recordAdded") === "true") ;
         let guessJson= JSON.parse(localStorage.getItem("guessList"));
         guessJson.forEach((guess) =>{
             selectGame(guess);
         })
-        phpSession = localStorage.getItem("phpSession");
-        getUserFromSession();
-        recordAdded = (localStorage.getItem("recordAdded") === "true") ;
     } else {
         toggleWelcomeScreen()
     }
@@ -226,6 +228,7 @@ function getUserFromSession(){
         if(reply !== ""){
             loginUsername = reply;
             updateLogin();
+            getRecords();
             toggleWinLoginRow();
         }
     })
@@ -505,7 +508,7 @@ function getRecords(){
         let avgGuess = 0;
         let lastDate = datefy(rows[0]['date']);
         rows.forEach((record) =>{
-            console.log(lastDate - datefy(record['date']) <= (1000 * 60 * 60 * 24))
+            //console.log(lastDate - datefy(record['date']) <= (1000 * 60 * 60 * 24))
             if((lastDate - datefy(record['date'])) <= (1000 * 60 * 60 * 24)){
                 streak++;
             } else {
