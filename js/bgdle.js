@@ -117,14 +117,10 @@ function submitLogin(){
     })
 }
 
-function updateLogin(){
+function updateLogin() {
     let usernameTitle = document.getElementById("usernameTitle")
     usernameTitle.innerHTML = "Hi " + loginUsername;
-    let loginIcon = document.getElementById("loginIcon");
-    loginIcon.classList.remove("bi-box-arrow-in-right")
-    loginIcon.classList.add("bi-box-arrow-left");
 }
-
 function toggleLoginChange(reset = false){
     let loginTitle = document.getElementById("loginTitle");
     let changeLoginBtn = document.getElementById("changeLoginBtn");

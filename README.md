@@ -24,3 +24,4 @@ Possible additions (need research):
 * Some other Hints, maybe unveiling properties - hoping to not change gameplay loop too much.
 * Collection mode - might add too many games and stress server.
 * light game mode - bgg1000 is heavy games inclined, would love to have a mode for lighter games.
+* Add board game family property as a list - Mainly a design element problem of fitting in a 5th list.
