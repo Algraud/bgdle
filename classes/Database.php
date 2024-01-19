@@ -199,7 +199,7 @@ class Database
     public function updateRecord(int $id, int $user, string $date): bool
     {
         $result = $this->DB->query('SELECT * FROM records WHERE userID="'.$user.'" AND date="'.$date.'"');
-        if(!$result->fetchArray()){
+        if($result->fetchArray()){
             $this->deleteRecord($id);
             return false;
         }
