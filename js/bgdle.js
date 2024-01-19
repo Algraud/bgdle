@@ -18,41 +18,44 @@ let timeLeftTimer = 0;
 function setupPage(){
     clearPage();
     setupGameObject("answer", "answerCol")
-    setupEventListeners()
     updateDate()
     clearKnownAnswers()
     loadLocal()
+    setupEventListeners()
+    setupModalEvents()
     saveLocal()
+    hideCurtains()
+}
+
+function hideCurtains(){
+    let curtains = document.getElementById("curtain");
+    curtains.classList.add("d-none");
 }
 
 function setupEventListeners(){
     let searchBar = document.getElementById("searchBarCol");
     searchBar.addEventListener("input", searchGames)
     searchBar.addEventListener("keyup", escapeSearch)
-    let playDailyBtn = document.getElementById("playDailyBtn")
-    playDailyBtn.addEventListener("click", startDaily)
-    let helpCloseBtn = document.getElementById("helpCloseBtn")
-    helpCloseBtn.addEventListener("click", toggleWelcomeScreen)
-    let helpBtn = document.getElementById("helpBtn")
-    helpBtn.addEventListener("click", toggleWelcomeScreen)
-    let legendBtn = document.getElementById("legendTab")
-    legendBtn.addEventListener("click", toggleLegend)
-    let retryBtn = document.getElementById("retryButton")
-    retryBtn.addEventListener("click", retryDaily)
-    let clipBtn = document.getElementById("clipboardButton")
-    clipBtn.addEventListener("click", createWinForClipboard)
-    let spoilBtn = document.getElementById("spoilerButton")
-    spoilBtn.addEventListener("click", createSpoilerForClipboard)
-    let spoilDiscordBtn = document.getElementById("spoilerDiscordButton")
-    spoilDiscordBtn.addEventListener("click", createSpoilerForClipboard)
-    let loginBtn = document.getElementById("loginTitleBtn");
-    loginBtn.addEventListener("click", loginOrOut)
-    let loginWinBtn = document.getElementById("winLoginButton");
-    loginWinBtn.addEventListener("click", loginOrOut)
-    let submitLoginButton = document.getElementById("submitLoginBtn")
-    submitLoginButton.addEventListener("click", submitLogin)
-    let changeLoginButton = document.getElementById("changeLoginBtn")
-    changeLoginButton.addEventListener("click", ()=>{toggleLoginChange()})
+    document.getElementById("playDailyBtn").addEventListener("click", startDaily)
+    document.getElementById("welcomeCloseButton").addEventListener("click", toggleWelcomeScreen)
+    document.getElementById("helpBtn").addEventListener("click", toggleWelcomeScreen)
+    document.getElementById("legendTab").addEventListener("click", toggleLegend)
+    document.getElementById("retryButton").addEventListener("click", retryDaily)
+    document.getElementById("spoilerButton").addEventListener("click", createSpoilerForClipboard)
+    document.getElementById("spoilerDiscordButton").addEventListener("click", createSpoilerForClipboard)
+    document.getElementById("loginTitleBtn").addEventListener("click", loginOrOut)
+    document.getElementById("winLoginButton").addEventListener("click", loginOrOut)
+    document.getElementById("loginCloseButton").addEventListener("click", loginOrOut)
+    document.getElementById("submitLoginBtn").addEventListener("click", submitLogin)
+    document.getElementById("changeLoginBtn").addEventListener("click", ()=>{toggleLoginChange()})
+    document.getElementById("winBtn").addEventListener("click", toggleWinPage);
+    document.getElementById("winCloseButton").addEventListener("click", toggleWinPage)
+    document.getElementById("spoilerCheck").addEventListener("click", toggleSpoiler);
+
+}
+
+function setupModalEvents(){
+
 }
 
 function escapeSearch(e){
@@ -101,6 +104,7 @@ function submitLogin(){
             saveLocal();
             if(won){
                 addRecord();
+                toggleWinPage()
             }
         } else {
             if(signup){
@@ -162,22 +166,20 @@ function loginOrOut(){
 function toggleWinLoginRow(forceLogoutRow){
     let loginRow = document.getElementById("winLogin")
     let loggedRow = document.getElementById("winLoggedIn")
+    let loginButton = document.getElementById("winLoginButton")
     if(forceLogoutRow || loginRow.classList.contains("d-none")){
         loginRow.classList.remove("d-none");
         loggedRow.classList.add("d-none");
+        loginButton.classList.remove("d-none");
     } else {
         loggedRow.classList.remove("d-none");
         loginRow.classList.add("d-none");
+        loginButton.classList.add("d-none");
     }
 }
 
 function toggleLogin(){
-    let loginScreen = document.getElementById("loginScreen")
-    if(loginScreen.classList.contains("d-none")){
-        loginScreen.classList.remove("d-none");
-    } else {
-        loginScreen.classList.add("d-none");
-    }
+    $("#loginBackdrop").modal('toggle');
 }
 
 function retryDaily(){
@@ -212,13 +214,14 @@ function loadLocal(){
         }
         updateHintCounter(0);
         let guessJson= JSON.parse(localStorage.getItem("guessList"));
-        toggleWelcomeScreen()
         guessJson.forEach((guess) =>{
             selectGame(guess);
         })
         phpSession = localStorage.getItem("phpSession");
         getUserFromSession();
         recordAdded = (localStorage.getItem("recordAdded") === "true") ;
+    } else {
+        toggleWelcomeScreen()
     }
 }
 
@@ -233,13 +236,7 @@ function getUserFromSession(){
 }
 
 function toggleWelcomeScreen(){
-    let ele = document.getElementById("welcomeScreen");
-    if(ele.classList.contains("d-none")){
-        ele.classList.remove("d-none");
-    }
-    else {
-        ele.classList.add("d-none")
-    }
+    $("#welcomeBackdrop").modal("toggle")
 }
 
 function toggleLegend(){
@@ -287,7 +284,11 @@ function updateTimeLeft(){
     let ele = document.getElementById("timeLeft");
     let cd = new Date();
     let goalDate = new Date(Date.UTC(cd.getFullYear(), cd.getMonth(), cd.getDate() + 1));
+    //console.log(cd + " - " + goalDate)
     let difference = goalDate-cd;
+    if(difference < 0){
+        difference += 1000*60*60*24;
+    }
     let hours = Math.floor(difference / (1000*60*60));
     let mins = Math.floor((difference % (1000*60*60)) / (1000*60));
     let secs = Math.floor((difference % (1000*60)) / 1000)
@@ -410,6 +411,9 @@ function setSearchedGameElement(game, i){
 
 function selectGame(game){
     clearSearch()
+    if(won){
+        return;
+    }
     let nonUnique = false;
     guessList.forEach((guess) => {
         if(guess.id === game.id){
@@ -421,9 +425,15 @@ function selectGame(game){
     }
     guessList.push(game)
     let counter = guessList.length - 1;
-    $.getJSON("main.php?request&game=" + game.id + "&date=" + dailyDate.replaceAll("-", ""), (json) => {
-        setupGameObject("guess" + counter, "guessesCol", game)
-        compareGame(json, counter)
+    let url = "main.php?request&game=" + game.id + "&date=" + dailyDate.replaceAll("-", "");
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        async: false,
+        success: (json) => {
+            setupGameObject("guess" + counter, "guessesCol", game)
+            compareGame(json, counter)
+        }
     })
     //console.log(guessList);
 }
@@ -476,6 +486,7 @@ function win(guessCounter){
     updateName("answername", guessList[guessList.length-1].name)
     updateWinPage(guessCounter);
     addRecord()
+    addWinButton();
 }
 
 function addRecord(){
@@ -497,16 +508,19 @@ function getRecords(){
         let streak = 0;
         let avgGuess = 0;
         let lastDate = datefy(rows[0]['date']);
-        let streakGoing = true;
         rows.forEach((record) =>{
-            if(streakGoing || lastDate - datefy(record['date'])){
+            console.log(lastDate - datefy(record['date']) <= (1000 * 60 * 60 * 24))
+            if((lastDate - datefy(record['date'])) <= (1000 * 60 * 60 * 24)){
                 streak++;
+            } else {
+                streak = 1;
             }
+            lastDate = datefy(record['date']);
             avgGuess += parseInt(record['guesses']);
             avgHint += parseInt(record['hints']);
         })
-        avgGuess = avgGuess / total;
-        avgHint = avgHint / total;
+        avgGuess = Math.round((avgGuess / total) * 100)/100;
+        avgHint = Math.round((avgHint / total) * 100)/100;
         updateWinRecordsRow(total, streak, avgGuess, avgHint);
     })
 }
@@ -535,16 +549,10 @@ function checkUnveilTitle(){
     if(guessList.length % 10 === 0){
         let letterPos = Math.floor(guessList.length / 10) - 1;
         $.get("main.php?unveilTitle=" + letterPos + "&date=" + getConvertedDate(), function (letter){
-            let ele = document.getElementById("answername");
-            /*
-            if(ele.innerHTML.length -1 < letterPos){
-                ele.innerHTML += letter
+            if(won){
+                return;
             }
-            else {
-                let firstPart = ele.innerHTML.substring(0, letterPos);
-                let lastPart = ele.innerHTML.substring(letterPos+1);
-                ele.innerHTML = firstPart + letter + lastPart;
-            }*/
+            let ele = document.getElementById("answername");
             ele.innerHTML = letter + ele.innerHTML;
         })
     }
@@ -552,12 +560,19 @@ function checkUnveilTitle(){
 
 
 function updateWinPage(counter){
-    let winPage = document.getElementById("winScreen")
     let guessCounter = document.getElementById("winGuessCounter")
     guessCounter.innerHTML = counter.toString()
     let winDate = document.getElementById("winDate");
     winDate.innerHTML = dailyDate;
-    winPage.classList.remove("d-none")
+    $("#winBackdrop").modal('show');
+}
+
+function toggleWinPage(){
+    $("#winBackdrop").modal('toggle');
+}
+
+function addWinButton(){
+    document.getElementById("winBtn").classList.remove("d-none");
 }
 function updateName(id, value){
     let ele = document.getElementById(id);
@@ -875,6 +890,7 @@ function setTitle(prefix, game){
         name.innerHTML = game.name;
     }
     titleH.appendChild(name);
+    titleH.innerHTML += " ";
     let year = document.createElement("span");
     year.id = prefix + "year";
     year.innerHTML = "(????)";
@@ -914,35 +930,54 @@ function updateImageSrc(id, url){
         img.src = url;
     }
 }
-
-function createWinForClipboard(){
-    let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on https://www.bgdle.com"
-    navigator.clipboard.writeText(text);
-    let clipIcon = document.getElementById("clipboardIcon")
-    if(clipIcon.classList.contains("bi-clipboard-fill")){
-        clipIcon.classList.remove("bi-clipboard-fill")
-        clipIcon.classList.add("bi-clipboard-check-fill")
+function toggleShare(){
+    let shareScreen = document.getElementById("sharePopup");
+    if(shareScreen.classList.contains("d-none")){
+        shareScreen.classList.remove("d-none");
+        shareScreen.addEventListener("keyup", (e) => {
+            if(e.key === "Escape"){
+                toggleShare();
+            }
+        })
+    } else {
+        shareScreen.removeEventListener("keyup", (e) => {
+            if(e.key === "Escape"){
+                toggleShare();
+            }
+        })
+        shareScreen.classList.add("d-none");
     }
-    let clipBtn = clipIcon.parentElement;
-    if(!clipBtn.classList.contains("greenBG")) {
-        clipBtn.classList.add("greenBG");
-        setTimeout(function () {
-            clipBtn.classList.remove("greenBG");
-        }, 3000);
+}
+
+let spoilerIsChecked = false;
+
+function toggleSpoiler(){
+    let spoilerCheck = document.getElementById("spoilerCheck");
+    if(spoilerIsChecked){
+        spoilerCheck.classList.add("btnCheckOff");
+        spoilerCheck.classList.remove("btnCheckOn");
+        spoilerIsChecked = false;
+    } else {
+        spoilerCheck.classList.remove("btnCheckOff");
+        spoilerCheck.classList.add("btnCheckOn");
+        spoilerIsChecked = true;
     }
 }
 function createSpoilerForClipboard(e){
-    let text = "!SPOILER! BGdle: " + dailyDate + " guesses: "
     let clipBtn = e.currentTarget;
-    if(clipBtn.id === "spoilerDiscordButton"){
-        text += "||";
-    }
-    guessList.forEach((guess)=>{
-        text += guess.name + " >>> ";
-    })
-    text = text.slice(0,-4);
-    if(clipBtn.id === "spoilerDiscordButton"){
-        text += "||";
+    let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on https://www.bgdle.com"
+    if(spoilerIsChecked) {
+        text += " \n!SPOILER! " + dailyDate + " guesses: "
+        if (clipBtn.id === "spoilerDiscordButton") {
+            text += "||";
+        }
+        guessList.forEach((guess) => {
+            text += guess.name + " >>> ";
+        })
+        text = text.slice(0, -4);
+        if (clipBtn.id === "spoilerDiscordButton") {
+            text += "||";
+        }
     }
     navigator.clipboard.writeText(text);
     if(!clipBtn.classList.contains("greenBG")) {

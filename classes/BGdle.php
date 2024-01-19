@@ -30,15 +30,15 @@ class BGdle
         $games = $this->COLLECTOR->populateList($gameIds);
         $daily = $this->RANKER->pickDaily($games);
         $this->DB->insertDaily($daily, date("Ymd"));
-        $this->setupFreeplay($games);
+        $this->setupFreePlay($games);
         $this->postStats(date('Ymd',strtotime("-1 days")));
         $this->DB->deleteRecords();
     }
 
-    private function postStats($date){
+    private function postStats($date): void
+    {
         $body = array(
-            'username' => 'BGdle',
-            'content' => '',
+            'username' => 'BGdle'
         );
         $body['content'] = $this->gatherStats($date);
         $ch = curl_init('https://discord.com/api/webhooks/1196946643296206998/yAVi-vRTilB4ML29ziAi-JMgBrS6-W3blnvg4GGCbCLu2wFNeXyrN42DOlccu9HC4qSX');
@@ -58,7 +58,7 @@ class BGdle
     }
 
     private function gatherStats($date): string{
-        $records = $this->getRecords(session_id(), true, $date);
+        $records = json_decode($this->getRecords(session_id(), true, $date), true);
         $total = 0;
         $loggedTotal = 0;
         $avgGuess = 0;
@@ -90,7 +90,7 @@ class BGdle
     {
         return $this->COLLECTOR->getGame($id);
     }
-    public function setupFreeplay(array $gameList):void{
+    public function setupFreePlay(array $gameList):void{
         $max = count($gameList);
         for ($i=0; $i < $max; $i++){
             $daily = $this->RANKER->pickDaily($gameList);
@@ -172,17 +172,19 @@ class BGdle
             $this->changeSession($session);
         }
         if($updateID !== 0){
-            return $this->DB->updateRecord($updateID, $this->userID);
+            return $this->DB->updateRecord($updateID, $this->userID, $date);
         }
         $this->DB->loggedInUser = $this->userID;
         return $this->DB->insertRecord($date, $guesses, $hints, $_SERVER['REMOTE_ADDR'], $this->userID);
     }
 
-    public function getRecords(string $session, bool $all=false, string $date=""){
+    public function getRecords(string $session, bool $all=false, string $date=""): bool|string
+    {
         if($session !== "" ){
             $this->changeSession($session);
             return json_encode($this->DB->getRecords($this->userID, $all, $date));
         }
+        return false;
     }
 
     private function changeSession(string $session): void

@@ -1,21 +1,21 @@
 # bgdle
-A boardgame and wordle inspired game
+A board game and wordle inspired game
 
 Link: www.bgdle.com
 
 This is a hobby project.
 
-This page also serves as a Issue tracker.
+This page also serves as an Issue tracker.
 
 This is made possible by BGG XML API. Thank you for supplying the data for this to work.
 
 TODO list:
 * Add Board game localization.
-* Add How to play (instead of wall of text).
+* ~~Add How to play (instead of wall of text).~~
 * Add ability to play previous dates.
 * Make logged in stats better looking.
 * Some other Hints, maybe unveiling properties.
-* Redo Welcome screen.
+* ~~Redo Welcome screen.~~
 * Add Free-play.
 
 Possible additions (need research):

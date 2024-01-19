@@ -196,9 +196,26 @@ class Database
         return false;
     }
 
-    public function updateRecord(int $id, int $user): bool
+    public function updateRecord(int $id, int $user, string $date): bool
     {
+        $result = $this->DB->query('SELECT * FROM records WHERE userID="'.$user.'" AND date="'.$date.'"');
+        if(!$result->fetchArray()){
+            $this->deleteRecord($id);
+            return false;
+        }
         $sql = "UPDATE records SET userID='".$user."' WHERE id='".$id."'";
+        try {
+            $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        return true;
+    }
+
+    private function deleteRecord(int $id){
+        $sql = "DELETE FROM records WHERE id='".$id."'";
         try {
             $this->DB->query($sql);
 
@@ -236,7 +253,8 @@ class Database
         return $records;
     }
 
-    public function deleteRecords(bool $allRecords=false){
+    public function deleteRecords(bool $allRecords=false): bool
+    {
         $sql = "DELETE FROM records";
         if(!$allRecords){
             $sql .= " WHERE userID = '0'";
