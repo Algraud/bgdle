@@ -13,6 +13,9 @@ if(isset($_SERVER['argv'][1], $_SERVER['argv'][2]) && $_SERVER['argv'][1] === "g
 if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="update") {
     $main->updateGames();
 }
+if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="stats") {
+    $main->stats();
+}
 if(isset($_GET['request'])){
     echo $main->attemptGuess($_GET['game'], $_GET['date']);
 }
