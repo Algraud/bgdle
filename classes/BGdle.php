@@ -35,6 +35,10 @@ class BGdle
         $this->DB->deleteRecords();
     }
 
+    public function stats(){
+        $this->postStats("");
+    }
+
     private function postStats($date): void
     {
         $body = array(
@@ -73,7 +77,13 @@ class BGdle
                 $avgHint += $record['hints'];
             }
         }
-        $prettyDate = date("Y-m-d", strtotime($date));
+        $avgHint = round(($avgHint / $total), 2);
+        $avgGuess = round(($avgGuess / $total), 2);
+        if($date === ""){
+            $prettyDate = "{Forever}";
+        } else {
+            $prettyDate = date("Y-m-d", strtotime($date));
+        }
         return "On ".$prettyDate.", There were ".$total." games played. ".$loggedTotal." of them were by logged in players. 
         Average guesses(and hints): ".$avgGuess."(".$avgHint.").";
     }
@@ -180,7 +190,7 @@ class BGdle
 
     public function getRecords(string $session, bool $all=false, string $date=""): bool|string
     {
-        if($session !== "" ){
+        if($all || $session !== ""){
             $this->changeSession($session);
             return json_encode($this->DB->getRecords($this->userID, $all, $date));
         }
