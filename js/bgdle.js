@@ -340,6 +340,8 @@ function searchGames(event){
         if(!filterUsed){
             filterUsed = true;
             updateHintCounter(1);
+            guessList[guessList.length - 1].hints.push({attr:filterObj.attr, value:filterObj.value});
+            console.log(guessList);
         }
         let url = "main.php?searchadv=" + searchstring;
         url += "&attr=" + filterObj.attr;
@@ -422,6 +424,7 @@ function selectGame(game){
     if(nonUnique){
         return
     }
+    game.hints = [];
     guessList.push(game)
     let counter = guessList.length - 1;
     let url = "main.php?request&game=" + game.id + "&date=" + dailyDate.replaceAll("-", "");
@@ -482,7 +485,7 @@ function checkWin(guessCounter){
 function win(guessCounter){
     won = true;
     getImageUrl("answerimage", guessList[guessList.length-1].id)
-    updateName("answername", guessList[guessList.length-1].name)
+    updateName("answername", guessList[guessList.length-1].name, guessList[guessList.length-1].id)
     updateWinPage(guessCounter);
     addRecord()
     addWinButton();
@@ -573,9 +576,10 @@ function toggleWinPage(){
 function addWinButton(){
     document.getElementById("winBtn").classList.remove("d-none");
 }
-function updateName(id, value){
+function updateName(id, value, gameID){
     let ele = document.getElementById(id);
-    ele.innerHTML = value;
+    let url = "https://boardgamegeek.com/boardgame/" + gameID;
+    ele.innerHTML = "<a href='" + url +"' target='_blank'>"+ value + "</a>";
 }
 
 function determineColorAndIcon(attribute, comparison, eleID, array = null, arrElePrefix = "", arrCompletion = 0){
@@ -972,6 +976,19 @@ function createSpoilerForClipboard(e){
         }
         guessList.forEach((guess) => {
             text += guess.name + " >>> ";
+            if(guess.hints.length > 0){
+                text += "Hints Used: ";
+                let first = true;
+                guess.hints.forEach((hint) =>{
+                    if(first){
+                        first = false;
+                        text += hint.attr + " : " + hint.value;
+                    } else {
+                        text += ", " + hint.attr + " : " + hint.value;
+                    }
+                })
+                text += " >>> ";
+            }
         })
         text = text.slice(0, -4);
         if (clipBtn.id === "spoilerDiscordButton") {
