@@ -77,8 +77,10 @@ class BGdle
                 $avgHint += $record['hints'];
             }
         }
-        $avgHint = round(($avgHint / $total), 2);
-        $avgGuess = round(($avgGuess / $total), 2);
+        if($total !== 0) {
+            $avgHint = round(($avgHint / $total), 2);
+            $avgGuess = round(($avgGuess / $total), 2);
+        }
         if($date === ""){
             $prettyDate = "{Forever}";
         } else {

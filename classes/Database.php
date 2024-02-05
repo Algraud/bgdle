@@ -56,6 +56,12 @@ class Database
             "hints" INTEGER,
             "ip" VARCHAR
         )');
+        $this->DB->query('CREATE TABLE IF NOT EXISTS "tokens" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "userID" INTEGER,
+            "token" VARCHAR,
+            "date" INTEGER
+        )');
     }
 
     public function insertGame(Game $game, bool $force = false): void
