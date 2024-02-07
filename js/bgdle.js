@@ -977,17 +977,17 @@ function createSpoilerForClipboard(e){
         guessList.forEach((guess) => {
             text += guess.name + " >>> ";
             if(guess.hints.length > 0){
-                text += "Hints Used: ";
+                text += "[Hints Used: ";
                 let first = true;
                 guess.hints.forEach((hint) =>{
                     if(first){
                         first = false;
-                        text += hint.attr + " : " + hint.value;
+                        text += capitalizeFirstLetter(hint.attr) + ": " + hint.value;
                     } else {
-                        text += ", " + hint.attr + " : " + hint.value;
+                        text += ", " + capitalizeFirstLetter(hint.attr) + ": " + hint.value;
                     }
                 })
-                text += " >>> ";
+                text += "] >>> ";
             }
         })
         text = text.slice(0, -4);
@@ -1004,7 +1004,10 @@ function createSpoilerForClipboard(e){
     }
 }
 
-
+function capitalizeFirstLetter(string){
+    let firstLetter = string.charAt(0).toUpperCase();
+    return firstLetter + string.slice(1)
+}
 
 const Comparison = {
     A_LOT_LOWER: -2,
