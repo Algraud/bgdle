@@ -33,6 +33,7 @@ class BGdle
         $this->setupFreePlay($games);
         $this->postStats(date('Ymd',strtotime("-1 days")));
         $this->DB->deleteRecords();
+        $this->DB->deleteTokens();
     }
 
     public function stats(){
@@ -152,29 +153,49 @@ class BGdle
         return $game->name[$pos];
     }
 
-    public function attemptLogin(string $isSignup, string $username, string $password, string $email): bool|string
+    public function attemptLogin(string $isSignup, string $username, string $password, string $email): false|string
     {
+        $obj = new \stdClass();
         if($isSignup === "true"){
             $password = password_hash($password, PASSWORD_DEFAULT);
             if($this->DB->insertUser($username, $password, $email)){
                 session_start();
                 $_SESSION['username'] = $username;
                 $_SESSION['userID'] = $this->DB->loggedInUser;
-                return session_id();
+                $obj->token = $this->saveToken($this->DB->loggedInUser);
+                $obj->session = $this->saveToken($this->DB->loggedInUser);
             }
         }
         if($this->DB->checkLogins($username, $password)){
             session_start();
             $_SESSION['username'] = $username;
             $_SESSION['userID'] = $this->DB->loggedInUser;
-            return session_id();
+            $this->saveToken($this->DB->loggedInUser);
         }
-        return "";
+        return json_encode($obj);
+    }
+
+    private function saveToken(int $userID): string
+    {
+        $token = bin2hex(random_bytes(8).$userID.random_bytes(8));
+        $this->DB->insertToken($token, $userID);
+        return $token;
     }
 
     public function getUsername(string $session): string
     {
         $this->changeSession($session);
+        return $this->sessionUsername;
+    }
+
+    public function checkToken(string $token, string $id): string
+    {
+        $obj = new \stdClass();
+        if($this->DB->checkToken($token, (int) $id)){
+            $obj->status = true;
+            $obj->session = session_id();
+            $obj->username = $this->DB->getUsername($id);
+        }
         return $this->sessionUsername;
     }
 
