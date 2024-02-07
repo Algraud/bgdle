@@ -176,6 +176,41 @@ class Database
         }
         return false;
     }
+    public function getUsername(string $id): string
+    {
+        $result = $this->DB->query('SELECT * FROM users WHERE id="'.$id.'"');
+        $user = $result->fetchArray();
+        if(!$user) {
+            return "";
+        }
+        return $user['username'];
+    }
+
+    public function insertToken(string $token, int $userID){
+        $pattern = "(userID, token, date)";
+        $values = "('". $userID . "', '" . $token . "', '" . time() . "')";
+        $sql = 'INSERT INTO tokens '.$pattern.' VALUES '.$values;
+        //echo $sql;
+        try {
+            $this->DB->query($sql);
+
+        } catch (SQLiteException){
+            //echo "error";
+            return false;
+        }
+        return true;
+    }
+
+    public function checkToken(string $token, int $id): bool
+    {
+        $result = $this->DB->query('SELECT * FROM tokens WHERE token="'.$token.'" AND userID="'.$id.'"');
+        $user = $result->fetchArray();
+        if(!$user) {
+            return false;
+        }
+        $this->loggedInUser = $id;
+        return true;
+    }
 
     public function insertRecord( string $date, int $guesses, int $hints, string $ip, int $user): bool|int
     {
@@ -264,6 +299,22 @@ class Database
         $sql = "DELETE FROM records";
         if(!$allRecords){
             $sql .= " WHERE userID = '0'";
+        }
+        try {
+            $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        return true;
+    }
+    public function deleteTokens(bool $allTokens=false): bool
+    {
+        $sql = "DELETE FROM tokens";
+        if(!$allTokens){
+            $cutOffDate = time() - (60*60*24*30);
+            $sql .= " WHERE date < '".$cutOffDate."'";
         }
         try {
             $this->DB->query($sql);

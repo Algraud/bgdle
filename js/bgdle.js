@@ -89,11 +89,13 @@ function submitLogin(){
         return
     }
     //console.log("'" + username + "' - '" + password + "' - '" + email + "' - Signup: " + signup)
-    $.get("main.php?login=" + signup + "&username=" + username + "&password=" + password +
+    $.getJSON("main.php?login=" + signup + "&username=" + username + "&password=" + password +
             "&email=" + email, function (reply) {
-        if(reply !== ""){
+        if(reply['token'] !== null){
             loginUsername = username;
-            phpSession = reply;
+            phpSession = reply['session'];
+            localStorage.setItem("userToken", reply['token'])
+            localStorage.setItem("userID", sessionStorage.getItem('userID'))
             usernameField.value = "";
             password.value = "";
             email.value = "";
@@ -120,6 +122,9 @@ function submitLogin(){
 function updateLogin() {
     let usernameTitle = document.getElementById("usernameTitle")
     usernameTitle.innerHTML = "Hi " + loginUsername;
+
+    let titleLoginBtn = document.getElementById("loginTitleBtn");
+    titleLoginBtn.innerHTML = "Logout";
 }
 function toggleLoginChange(reset = false){
     let loginTitle = document.getElementById("loginTitle");
@@ -145,9 +150,8 @@ function loginOrOut(){
         //logout
         loginUsername = "";
         phpSession = "";
-        let loginIcon = document.getElementById("loginIcon");
-        loginIcon.classList.remove("bi-box-arrow-left");
-        loginIcon.classList.add("bi-box-arrow-in-right")
+        let loginBtn = document.getElementById("loginTitleBtn");
+        loginBtn.innerHTML = "Login";
         let userTitle = document.getElementById("usernameTitle");
         userTitle.innerHTML = "";
         saveLocal()
@@ -213,6 +217,11 @@ function loadLocal(){
 
         phpSession = localStorage.getItem("phpSession");
         getUserFromSession();
+        if(loginUsername === ""){
+            let userToken = localStorage.getItem("userToken");
+            let userID = localStorage.getItem("userID");
+            checkLoginWithToken(userToken, userID)
+        }
         recordAdded = (localStorage.getItem("recordAdded") === "true") ;
         let guessJson= JSON.parse(localStorage.getItem("guessList"));
         guessJson.forEach((guess) =>{
@@ -227,6 +236,18 @@ function getUserFromSession(){
     $.get("main.php?session=" + phpSession, (reply) => {
         if(reply !== ""){
             loginUsername = reply;
+            updateLogin();
+            getRecords();
+            toggleWinLoginRow();
+        }
+    })
+}
+
+function checkLoginWithToken(token, id){
+    $.getJSON("main.php?loginToken=" + token + "&id=" + id, (reply) => {
+        if(reply.status === "true"){
+            phpSession = reply.session;
+            loginUsername = reply.userName;
             updateLogin();
             getRecords();
             toggleWinLoginRow();

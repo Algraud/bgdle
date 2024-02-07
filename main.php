@@ -41,6 +41,9 @@ if(isset($_GET['login'])){
 if(isset($_GET['session'])){
     echo $main->getUsername($_GET['session']);
 }
+if(isset($_GET['loginToken'])){
+    echo $main->checkToken($_GET['loginToken'], $_GET['loginID']);
+}
 if(isset($_GET['record'])){
     echo $main->addRecord((int)$_GET['record'],$_GET['session'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
 }
