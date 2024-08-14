@@ -7,11 +7,13 @@ use SQLiteException;
 
 class Database
 {
-    private string $FILENAME = "gameData.sqlite";
     public SQLite3 $DB;
     public int $loggedInUser = 0;
-    public function __construct(){
-        $this->DB = new SQLite3($this->FILENAME);
+
+    private array|false $config;
+    public function __construct($config){
+        $this->config = $config;
+        $this->DB = new SQLite3($this->config['database']['filename']);
         $this->DB->busyTimeout(1000);
         $this->DB->enableExceptions(true);
         $this->createTables();
@@ -34,7 +36,8 @@ class Database
             "designers" VARCHAR,
             "artists" VARCHAR,
             "publisher" VARCHAR,
-            "description" VARCHAR
+            "description" VARCHAR,
+            "randomorder" REAL                                
         )');
         $this->DB->query('CREATE TABLE IF NOT EXISTS "daily" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -62,6 +65,12 @@ class Database
             "token" VARCHAR,
             "date" INTEGER
         )');
+    }
+
+    public function alterTable(){
+        $this->DB->query('ALTER TABLE games
+            ADD randomorder REAL;
+');
     }
 
     public function insertGame(Game $game, bool $force = false): void
@@ -133,7 +142,7 @@ class Database
                 $sql .= "AND " . $attr . "='" . $value . "'";
             }
         }
-        $sql .= " LIMIT 10";
+        $sql .= " ORDER BY randomOrder LIMIT 10";
         $result = $this->DB->query($sql);
         $games = [];
         while($gameSql = $result->fetchArray()){
@@ -324,6 +333,20 @@ class Database
             return false;
         }
         return true;
+    }
+
+    public function updateRandomColumn(): bool
+    {
+        $sql = "UPDATE games SET randomorder=Random()";
+        try {
+            $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        return true;
+
     }
 
 }

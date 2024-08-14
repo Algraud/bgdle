@@ -9,31 +9,32 @@ class BGdle
     public Collector $COLLECTOR;
     public Comparer $COMPARER;
 
-    public string $sessionUsername = "";
-    public int $userID = 0;
+    private array|false $config;
+
     public function __construct(){
-        $this->DB = new Database();
+
+        $this->config = parse_ini_file("config.ini", true);
+        $this->DB = new Database($this->config);
         $this->RANKER = new Ranker();
         $this->COLLECTOR = new Collector($this->DB);
         $this->COMPARER = new Comparer();
-        if(isset($_SESSION['username'])){
-            $this->sessionUsername = $_SESSION['username'];
-        }
-        if(isset($_SESSION['userID'])){
-            $this->userID = $_SESSION['userID'];
-        }
     }
 
     public function setup(): void
     {
         $gameIds = $this->RANKER->rankGames();
         $games = $this->COLLECTOR->populateList($gameIds);
+        $this->DB->updateRandomColumn();
         $daily = $this->RANKER->pickDaily($games);
         $this->DB->insertDaily($daily, date("Ymd"));
         $this->setupFreePlay($games);
         $this->postStats(date('Ymd',strtotime("-1 days")));
         $this->DB->deleteRecords();
         $this->DB->deleteTokens();
+    }
+
+    public function alter(){
+        $this->DB->alterTable();
     }
 
     public function stats(){
@@ -43,10 +44,10 @@ class BGdle
     private function postStats($date): void
     {
         $body = array(
-            'username' => 'BGdle'
+            'username' => $this->config["discord"]["username"]
         );
         $body['content'] = $this->gatherStats($date);
-        $ch = curl_init('https://discord.com/api/webhooks/1196946643296206998/yAVi-vRTilB4ML29ziAi-JMgBrS6-W3blnvg4GGCbCLu2wFNeXyrN42DOlccu9HC4qSX');
+        $ch = curl_init($this->config["discord"]["url"]);
         curl_setopt_array($ch, array(
             CURLOPT_POST => TRUE,
             CURLOPT_RETURNTRANSFER => TRUE,
@@ -63,7 +64,7 @@ class BGdle
     }
 
     private function gatherStats($date): string{
-        $records = json_decode($this->getRecords(session_id(), true, $date), true);
+        $records = json_decode($this->getRecords("", "", true, $date), true);
         $total = 0;
         $loggedTotal = 0;
         $avgGuess = 0;
@@ -156,21 +157,25 @@ class BGdle
     public function attemptLogin(string $isSignup, string $username, string $password, string $email): false|string
     {
         $obj = new \stdClass();
+        $obj->token = "";
         if($isSignup === "true"){
             $password = password_hash($password, PASSWORD_DEFAULT);
             if($this->DB->insertUser($username, $password, $email)){
                 session_start();
-                $_SESSION['username'] = $username;
-                $_SESSION['userID'] = $this->DB->loggedInUser;
+                $obj->username = $username;
+                $obj->userID = $this->DB->loggedInUser;
                 $obj->token = $this->saveToken($this->DB->loggedInUser);
-                $obj->session = $this->saveToken($this->DB->loggedInUser);
+
+                $obj->session = session_id();
             }
         }
         if($this->DB->checkLogins($username, $password)){
             session_start();
-            $_SESSION['username'] = $username;
-            $_SESSION['userID'] = $this->DB->loggedInUser;
-            $this->saveToken($this->DB->loggedInUser);
+            $obj->username = $username;
+            $obj->userID = $this->DB->loggedInUser;
+            $obj->token = $this->saveToken($this->DB->loggedInUser);
+
+            $obj->session = session_id();
         }
         return json_encode($obj);
     }
@@ -182,13 +187,7 @@ class BGdle
         return $token;
     }
 
-    public function getUsername(string $session): string
-    {
-        $this->changeSession($session);
-        return $this->sessionUsername;
-    }
-
-    public function checkToken(string $token, string $id): string
+    public function checkToken(string $token, string $id): bool|string
     {
         $obj = new \stdClass();
         if($this->DB->checkToken($token, (int) $id)){
@@ -196,39 +195,28 @@ class BGdle
             $obj->session = session_id();
             $obj->username = $this->DB->getUsername($id);
         }
-        return $this->sessionUsername;
+        return json_encode($obj);
     }
 
-    public function addRecord(int $updateID, string $session, string $date, int $guesses, int $hints): bool|int
+    public function addRecord(int $updateID, string $token, string $userID, string $date, int $guesses, int $hints): bool|int
     {
-        if($session !== ""){
-            $this->changeSession($session);
+        if($token !== "" && $userID !== "" && $this->DB->checkToken($token, (int) $userID)){
+            $this->DB->loggedInUser = $userID;
         }
         if($updateID !== 0){
-            return $this->DB->updateRecord($updateID, $this->userID, $date);
+            return $this->DB->updateRecord($updateID, $userID, $date);
         }
-        $this->DB->loggedInUser = $this->userID;
-        return $this->DB->insertRecord($date, $guesses, $hints, $_SERVER['REMOTE_ADDR'], $this->userID);
+        return $this->DB->insertRecord($date, $guesses, $hints, $token, $userID);
     }
 
-    public function getRecords(string $session, bool $all=false, string $date=""): bool|string
+    public function getRecords(string $token, string $userID, bool $all=false, string $date=""): bool|string
     {
-        if($all || $session !== ""){
-            $this->changeSession($session);
-            return json_encode($this->DB->getRecords($this->userID, $all, $date));
+        if($all || ($token !== "" && $userID !=="" && $this->DB->checkToken($token, (int) $userID))){
+            if($userID ==""){
+                $userID =0;
+            }
+            return json_encode($this->DB->getRecords($userID, $all, $date));
         }
         return false;
-    }
-
-    private function changeSession(string $session): void
-    {
-        if($session !== session_id()){
-            session_unset();
-            session_destroy();
-            session_id($session);
-            session_start();
-            $this->sessionUsername = $_SESSION['username'];
-            $this->userID = $_SESSION['userID'];
-        }
     }
 }

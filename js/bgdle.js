@@ -91,11 +91,15 @@ function submitLogin(){
     //console.log("'" + username + "' - '" + password + "' - '" + email + "' - Signup: " + signup)
     $.getJSON("main.php?login=" + signup + "&username=" + username + "&password=" + password +
             "&email=" + email, function (reply) {
-        if(reply['token'] !== null){
+
+        //console.log("Test ");
+        //console.log(reply);
+        if(reply['token'] !== ""){
             loginUsername = username;
             phpSession = reply['session'];
             localStorage.setItem("userToken", reply['token'])
-            localStorage.setItem("userID", sessionStorage.getItem('userID'))
+            localStorage.setItem("userID", reply['userID'])
+            localStorage.setItem("username", username)
             usernameField.value = "";
             password.value = "";
             email.value = "";
@@ -150,6 +154,9 @@ function loginOrOut(){
         //logout
         loginUsername = "";
         phpSession = "";
+        localStorage.setItem("userToken", "")
+        localStorage.setItem("userID", "")
+        localStorage.setItem("username","")
         let loginBtn = document.getElementById("loginTitleBtn");
         loginBtn.innerHTML = "Login";
         let userTitle = document.getElementById("usernameTitle");
@@ -216,11 +223,14 @@ function loadLocal(){
         updateHintCounter(0);
 
         phpSession = localStorage.getItem("phpSession");
-        getUserFromSession();
-        if(loginUsername === ""){
+        getUserFromSession()
+        if(loginUsername === "" || loginUsername === null){
             let userToken = localStorage.getItem("userToken");
             let userID = localStorage.getItem("userID");
             checkLoginWithToken(userToken, userID)
+            if((loginUsername === "" || loginUsername === null) && (userToken === "" || userToken === null)) {
+                localStorage.setItem("userToken", Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2));
+            }
         }
         recordAdded = (localStorage.getItem("recordAdded") === "true") ;
         let guessJson= JSON.parse(localStorage.getItem("guessList"));
@@ -233,14 +243,12 @@ function loadLocal(){
 }
 
 function getUserFromSession(){
-    $.get("main.php?session=" + phpSession, (reply) => {
-        if(reply !== ""){
-            loginUsername = reply;
-            updateLogin();
-            getRecords();
-            toggleWinLoginRow();
-        }
-    })
+    loginUsername = localStorage.getItem("username");
+    if(loginUsername !== "" && loginUsername !== null) {
+        updateLogin();
+        getRecords();
+        toggleWinLoginRow();
+    }
 }
 
 function checkLoginWithToken(token, id){
@@ -514,7 +522,13 @@ function win(guessCounter){
 
 function addRecord(){
     if(!recordAdded || loginUsername !== "") {
-        $.get("main.php?record=" + recordID + "&session=" + phpSession + "&date=" + getConvertedDate() +
+        let userID = localStorage.getItem("userID")
+        let token = localStorage.getItem("userToken")
+        if(!userID) {
+            userID = 0;
+        }
+        $.get("main.php?record=" + recordID + "&token=" + token +
+            "&userID=" + userID + "&date=" + getConvertedDate() +
             "&guesses=" + guessList.length + "&hints=" + hints, (id) => {
             recordID = id;
             recordAdded = true;
@@ -524,19 +538,23 @@ function addRecord(){
 }
 
 function getRecords(){
-    $.getJSON("main.php?records="+phpSession, (rows)=>{
+    $.getJSON("main.php?records="+ localStorage.getItem("userToken")+"&userID=" +  localStorage.getItem("userID"), (rows)=>{
         //console.log(rows);
         let avgHint = 0;
         let total = rows.length;
         let streak = 0;
+        let newestStreak = 0
         let avgGuess = 0;
         let lastDate = datefy(rows[0]['date']);
         rows.forEach((record) =>{
+            //console.log(record['date'])
             //console.log(lastDate - datefy(record['date']) <= (1000 * 60 * 60 * 24))
-            if((lastDate - datefy(record['date'])) <= (1000 * 60 * 60 * 24)){
-                streak++;
-            } else {
-                streak = 1;
+            if(newestStreak === 0) {
+                if ((lastDate - datefy(record['date'])) <= (1000 * 60 * 60 * 24)) {
+                    streak++;
+                } else {
+                    newestStreak=streak;
+                }
             }
             lastDate = datefy(record['date']);
             avgGuess += parseInt(record['guesses']);
@@ -544,7 +562,7 @@ function getRecords(){
         })
         avgGuess = Math.round((avgGuess / total) * 100)/100;
         avgHint = Math.round((avgHint / total) * 100)/100;
-        updateWinRecordsRow(total, streak, avgGuess, avgHint);
+        updateWinRecordsRow(total, newestStreak, avgGuess, avgHint);
     })
 }
 

@@ -1,20 +1,24 @@
 <?php
-
 foreach (glob("classes/*.php") as $filename){
     include $filename;
 }
 $main = new \Bgdle\BGdle();
-if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="setup") {
-    $main->setup();
-}
-if(isset($_SERVER['argv'][1], $_SERVER['argv'][2]) && $_SERVER['argv'][1] === "getGame") {
-    print_r($main->getGame($_SERVER['argv'][2]));
-}
-if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="update") {
-    $main->updateGames();
-}
-if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="stats") {
-    $main->stats();
+if(isset($_SERVER['argv'][1])){
+    if($_SERVER['argv'][1]==="setup") {
+        $main->setup();
+    }
+    if($_SERVER['argv'][1]==="alter") {
+        $main->alter();
+    }
+    if(isset($_SERVER['argv'][2]) && $_SERVER['argv'][1] === "getGame") {
+        print_r($main->getGame($_SERVER['argv'][2]));
+    }
+    if($_SERVER['argv'][1]==="update") {
+        $main->updateGames();
+    }
+    if($_SERVER['argv'][1]==="stats") {
+        $main->stats();
+    }
 }
 if(isset($_GET['request'])){
     echo $main->attemptGuess($_GET['game'], $_GET['date']);
@@ -38,15 +42,12 @@ if(isset($_GET['login'])){
     echo $main->attemptLogin($_GET['login'], $_GET['username'],
                             $_GET['password'], $_GET['email']);
 }
-if(isset($_GET['session'])){
-    echo $main->getUsername($_GET['session']);
-}
 if(isset($_GET['loginToken'])){
-    echo $main->checkToken($_GET['loginToken'], $_GET['loginID']);
+    echo $main->checkToken($_GET['loginToken'], $_GET['id']);
 }
 if(isset($_GET['record'])){
-    echo $main->addRecord((int)$_GET['record'],$_GET['session'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
+    echo $main->addRecord((int)$_GET['record'],$_GET['token'],$_GET['userID'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
 }
 if(isset($_GET['records'])){
-    echo $main->getRecords($_GET['records']);
+    echo $main->getRecords($_GET['records'], $_GET['userID']);
 }
