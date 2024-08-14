@@ -7,11 +7,13 @@ use SQLiteException;
 
 class Database
 {
-    private string $FILENAME = "gameData.sqlite";
     public SQLite3 $DB;
     public int $loggedInUser = 0;
-    public function __construct(){
-        $this->DB = new SQLite3($this->FILENAME);
+
+    private array|false $config;
+    public function __construct($config){
+        $this->config = $config;
+        $this->DB = new SQLite3($this->config['database']['filename']);
         $this->DB->busyTimeout(1000);
         $this->DB->enableExceptions(true);
         $this->createTables();

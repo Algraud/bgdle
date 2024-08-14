@@ -2,3 +2,5 @@
 *.log
 *.sqlite
 *.sql
+
+config.ini

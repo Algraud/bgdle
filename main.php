@@ -1,5 +1,4 @@
 <?php
-
 foreach (glob("classes/*.php") as $filename){
     include $filename;
 }
@@ -38,14 +37,11 @@ if(isset($_GET['login'])){
     echo $main->attemptLogin($_GET['login'], $_GET['username'],
                             $_GET['password'], $_GET['email']);
 }
-if(isset($_GET['session'])){
-    echo $main->getUsername($_GET['session']);
-}
 if(isset($_GET['loginToken'])){
-    echo $main->checkToken($_GET['loginToken'], $_GET['loginID']);
+    echo $main->checkToken($_GET['loginToken'], $_GET['id']);
 }
 if(isset($_GET['record'])){
-    echo $main->addRecord((int)$_GET['record'],$_GET['session'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
+    echo $main->addRecord((int)$_GET['record'],$_GET['token'],$_GET['userID'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
 }
 if(isset($_GET['records'])){
     echo $main->getRecords($_GET['records']);
