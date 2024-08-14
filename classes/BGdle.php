@@ -24,6 +24,7 @@ class BGdle
     {
         $gameIds = $this->RANKER->rankGames();
         $games = $this->COLLECTOR->populateList($gameIds);
+        $this->DB->updateRandomColumn();
         $daily = $this->RANKER->pickDaily($games);
         $this->DB->insertDaily($daily, date("Ymd"));
         $this->setupFreePlay($games);

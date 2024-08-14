@@ -36,7 +36,8 @@ class Database
             "designers" VARCHAR,
             "artists" VARCHAR,
             "publisher" VARCHAR,
-            "description" VARCHAR
+            "description" VARCHAR,
+            "random" REAL                                
         )');
         $this->DB->query('CREATE TABLE IF NOT EXISTS "daily" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -326,6 +327,20 @@ class Database
             return false;
         }
         return true;
+    }
+
+    public function updateRandomColumn(): bool
+    {
+        $sql = "UPDATE games SET random=Random()";
+        try {
+            $this->DB->query($sql);
+
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        return true;
+
     }
 
 }
