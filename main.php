@@ -3,17 +3,22 @@ foreach (glob("classes/*.php") as $filename){
     include $filename;
 }
 $main = new \Bgdle\BGdle();
-if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="setup") {
-    $main->setup();
-}
-if(isset($_SERVER['argv'][1], $_SERVER['argv'][2]) && $_SERVER['argv'][1] === "getGame") {
-    print_r($main->getGame($_SERVER['argv'][2]));
-}
-if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="update") {
-    $main->updateGames();
-}
-if(isset($_SERVER['argv'][1])&& $_SERVER['argv'][1]==="stats") {
-    $main->stats();
+if(isset($_SERVER['argv'][1])){
+    if($_SERVER['argv'][1]==="setup") {
+        $main->setup();
+    }
+    if($_SERVER['argv'][1]==="alter") {
+        $main->alter();
+    }
+    if(isset($_SERVER['argv'][2]) && $_SERVER['argv'][1] === "getGame") {
+        print_r($main->getGame($_SERVER['argv'][2]));
+    }
+    if($_SERVER['argv'][1]==="update") {
+        $main->updateGames();
+    }
+    if($_SERVER['argv'][1]==="stats") {
+        $main->stats();
+    }
 }
 if(isset($_GET['request'])){
     echo $main->attemptGuess($_GET['game'], $_GET['date']);

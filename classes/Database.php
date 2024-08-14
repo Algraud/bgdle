@@ -67,6 +67,12 @@ class Database
         )');
     }
 
+    public function alterTable(){
+        $this->DB->query('ALTER TABLE games
+            ADD randomorder REAL;
+');
+    }
+
     public function insertGame(Game $game, bool $force = false): void
     {
         $result = $this->DB->query('SELECT * FROM games WHERE id="'.$game->id.'"');

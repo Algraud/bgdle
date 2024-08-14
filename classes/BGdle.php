@@ -33,6 +33,10 @@ class BGdle
         $this->DB->deleteTokens();
     }
 
+    public function alter(){
+        $this->DB->alterTable();
+    }
+
     public function stats(){
         $this->postStats("");
     }
