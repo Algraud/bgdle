@@ -19,6 +19,9 @@ if(isset($_SERVER['argv'][1])){
     if($_SERVER['argv'][1]==="stats") {
         $main->stats();
     }
+    if($_SERVER['argv'][1]==="randomize") {
+        $main->randomizeOrder();
+    }
 }
 if(isset($_GET['request'])){
     echo $main->attemptGuess($_GET['game'], $_GET['date']);
