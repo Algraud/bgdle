@@ -24,7 +24,7 @@ class BGdle
     {
         $gameIds = $this->RANKER->rankGames();
         $games = $this->COLLECTOR->populateList($gameIds);
-        $this->DB->updateRandomColumn();
+        $this->randomizeOrder();
         $daily = $this->RANKER->pickDaily($games);
         $this->DB->insertDaily($daily, date("Ymd"));
         $this->setupFreePlay($games);
@@ -35,6 +35,10 @@ class BGdle
 
     public function alter(){
         $this->DB->alterTable();
+    }
+
+    public function randomizeOrder(){
+        $this->DB->updateRandomColumn();
     }
 
     public function stats(){
