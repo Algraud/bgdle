@@ -208,6 +208,9 @@ class BGdle
     public function getRecords(string $token, string $userID, bool $all=false, string $date=""): bool|string
     {
         if($all || ($token !== "" && $userID !=="" && $this->DB->checkToken($token, (int) $userID))){
+            if($userID ==""){
+                $userID =0;
+            }
             return json_encode($this->DB->getRecords($userID, $all, $date));
         }
         return false;

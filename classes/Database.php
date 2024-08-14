@@ -37,7 +37,7 @@ class Database
             "artists" VARCHAR,
             "publisher" VARCHAR,
             "description" VARCHAR,
-            "random" REAL                                
+            "randomorder" REAL                                
         )');
         $this->DB->query('CREATE TABLE IF NOT EXISTS "daily" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -136,7 +136,7 @@ class Database
                 $sql .= "AND " . $attr . "='" . $value . "'";
             }
         }
-        $sql .= " LIMIT 10";
+        $sql .= " ORDER BY randomOrder LIMIT 10";
         $result = $this->DB->query($sql);
         $games = [];
         while($gameSql = $result->fetchArray()){
@@ -331,7 +331,7 @@ class Database
 
     public function updateRandomColumn(): bool
     {
-        $sql = "UPDATE games SET random=Random()";
+        $sql = "UPDATE games SET randomorder=Random()";
         try {
             $this->DB->query($sql);
 

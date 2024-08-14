@@ -44,5 +44,5 @@ if(isset($_GET['record'])){
     echo $main->addRecord((int)$_GET['record'],$_GET['token'],$_GET['userID'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
 }
 if(isset($_GET['records'])){
-    echo $main->getRecords($_GET['records']);
+    echo $main->getRecords($_GET['records'], $_GET['userID']);
 }
