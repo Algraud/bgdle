@@ -55,9 +55,14 @@ class Ranker
         return $gameIds;
     }
 
-    public function pickDaily(array $gameList): Game{
-        $max = count($gameList);
+    public function pickDaily(array $gameIds){
+        $max = count($gameIds);
         $rnd = random_int(0, $max-1);
-        return $gameList[$rnd];
+        return $gameIds[$rnd];
+    }
+
+    public function getRankedListOfIds(): array
+    {
+        return $this->rankedList;
     }
 }

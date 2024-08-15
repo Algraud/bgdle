@@ -22,6 +22,9 @@ if(isset($_SERVER['argv'][1])){
     if($_SERVER['argv'][1]==="randomize") {
         $main->randomizeOrder();
     }
+    if($_SERVER['argv'][1]==="dailyTest") {
+        $main->dailyTest($_SERVER['argv'][2]);
+    }
 }
 if(isset($_GET['request'])){
     echo $main->attemptGuess($_GET['game'], $_GET['date']);

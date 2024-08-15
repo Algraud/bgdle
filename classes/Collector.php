@@ -44,7 +44,7 @@ class Collector
 
                 continue;
             }
-            $this->GameList[] = $game;
+            //$this->GameList[] = $game;
             if($this->curlCount >=5){
                 sleep(9);
                 $this->curlCount = 0;
@@ -124,7 +124,9 @@ class Collector
     {
         if($force || !($game = $this->DB->getGame($id))){
             $this->curlCount++;
-            return $this->getGameCurl($id, $echo, $force);
+            $game = $this->getGameCurl($id, $echo, $force);
+            $this->GameList[] = $game;
+            return $game;
         }
         if($echo) {
             echo $game->name . "\n";

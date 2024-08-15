@@ -25,7 +25,8 @@ class BGdle
         $gameIds = $this->RANKER->rankGames();
         $games = $this->COLLECTOR->populateList($gameIds);
         $this->randomizeOrder();
-        $daily = $this->RANKER->pickDaily($games);
+        $dailyID = $this->RANKER->pickDaily($gameIds);
+        $daily = $this->getGame($dailyID);
         $this->DB->insertDaily($daily, date("Ymd"));
         $this->setupFreePlay($games);
         $this->postStats(date('Ymd',strtotime("-1 days")));
@@ -33,15 +34,43 @@ class BGdle
         $this->DB->deleteTokens();
     }
 
-    public function alter(){
+    public function dailyTest($count): void
+    {
+        if(is_null($count)){
+            $count=10;
+        }
+        $gameIds = $this->RANKER->rankGames();
+        $games = $this->COLLECTOR->populateList($gameIds);
+        echo "\n Ids " . count($gameIds) . " \n \n";
+        echo "\n Games " . count($games) . " \n \n";
+        for ($i = 0; $i < $count; $i++){
+            $gameID = $this->RANKER->pickDaily($gameIds);
+            $game = $this->getGame($gameID);
+            $key = array_search($game->id, $gameIds);
+            echo $i . ":  " . $game->id . " " . $game->name . " Rank:" . $key . "\n";
+            if($key > 1000){
+                echo "\n  over 1000 PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n \n";
+                exit;
+            }
+            if($key === FALSE){
+                echo "\n no key PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n \n";
+                exit;
+            }
+        }
+    }
+
+    public function alter(): void
+    {
         $this->DB->alterTable();
     }
 
-    public function randomizeOrder(){
+    public function randomizeOrder(): void
+    {
         $this->DB->updateRandomColumn();
     }
 
-    public function stats(){
+    public function stats(): void
+    {
         $this->postStats("");
     }
 
@@ -217,9 +246,11 @@ class BGdle
     {
         if($all || ($token !== "" && $userID !=="" && $this->DB->checkToken($token, (int) $userID))){
             if($userID ==""){
-                $userID =0;
+                $user = 0;
+            } else {
+                $user = (int) $userID;
             }
-            return json_encode($this->DB->getRecords($userID, $all, $date));
+            return json_encode($this->DB->getRecords($user, $all, $date));
         }
         return false;
     }
