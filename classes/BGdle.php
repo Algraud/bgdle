@@ -225,7 +225,6 @@ class BGdle
         $obj = new \stdClass();
         if($this->DB->checkToken($token, (int) $id)){
             $obj->status = true;
-            $obj->session = session_id();
             $obj->username = $this->DB->getUsername($id);
         }
         return json_encode($obj);

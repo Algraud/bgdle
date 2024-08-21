@@ -222,8 +222,6 @@ function loadLocal(){
         }
         updateHintCounter(0);
 
-        phpSession = localStorage.getItem("phpSession");
-        getUserFromSession()
         if(loginUsername === "" || loginUsername === null){
             let userToken = localStorage.getItem("userToken");
             let userID = localStorage.getItem("userID");
@@ -242,20 +240,13 @@ function loadLocal(){
     }
 }
 
-function getUserFromSession(){
-    loginUsername = localStorage.getItem("username");
-    if(loginUsername !== "" && loginUsername !== null) {
-        updateLogin();
-        getRecords();
-        toggleWinLoginRow();
-    }
-}
-
 function checkLoginWithToken(token, id){
+    //console.log("login Token")
     $.getJSON("main.php?loginToken=" + token + "&id=" + id, (reply) => {
-        if(reply.status === "true"){
-            phpSession = reply.session;
-            loginUsername = reply.userName;
+        //console.log(JSON.stringify(reply));
+        if(reply.status){
+            //console.log("login succesful");
+            loginUsername = reply.username;
             updateLogin();
             getRecords();
             toggleWinLoginRow();
