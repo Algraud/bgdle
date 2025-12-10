@@ -92,8 +92,8 @@ function submitLogin(){
     $.getJSON("main.php?login=" + signup + "&username=" + username + "&password=" + password +
             "&email=" + email, function (reply) {
 
-        //console.log("Test ");
-        //console.log(reply);
+        console.log("Test ");
+        console.log(reply);
         if(reply['token'] !== ""){
             loginUsername = username;
             phpSession = reply['session'];
@@ -222,6 +222,8 @@ function loadLocal(){
         }
         updateHintCounter(0);
 
+        phpSession = localStorage.getItem("phpSession");
+        getUserFromSession()
         if(loginUsername === "" || loginUsername === null){
             let userToken = localStorage.getItem("userToken");
             let userID = localStorage.getItem("userID");
@@ -240,13 +242,20 @@ function loadLocal(){
     }
 }
 
+function getUserFromSession(){
+    loginUsername = localStorage.getItem("username");
+    if(loginUsername !== "" && loginUsername !== null) {
+        updateLogin();
+        getRecords();
+        toggleWinLoginRow();
+    }
+}
+
 function checkLoginWithToken(token, id){
-    //console.log("login Token")
     $.getJSON("main.php?loginToken=" + token + "&id=" + id, (reply) => {
-        //console.log(JSON.stringify(reply));
-        if(reply.status){
-            //console.log("login succesful");
-            loginUsername = reply.username;
+        if(reply.status === "true"){
+            phpSession = reply.session;
+            loginUsername = reply.userName;
             updateLogin();
             getRecords();
             toggleWinLoginRow();
@@ -513,13 +522,8 @@ function win(guessCounter){
 
 function addRecord(){
     if(!recordAdded || loginUsername !== "") {
-        let userID = localStorage.getItem("userID")
-        let token = localStorage.getItem("userToken")
-        if(!userID) {
-            userID = 0;
-        }
-        $.get("main.php?record=" + recordID + "&token=" + token +
-            "&userID=" + userID + "&date=" + getConvertedDate() +
+        $.get("main.php?record=" + recordID + "&token=" + localStorage.getItem("token") +
+            "$userID=" + localStorage.getItem("userID") + "&date=" + getConvertedDate() +
             "&guesses=" + guessList.length + "&hints=" + hints, (id) => {
             recordID = id;
             recordAdded = true;
@@ -529,23 +533,19 @@ function addRecord(){
 }
 
 function getRecords(){
-    $.getJSON("main.php?records="+ localStorage.getItem("userToken")+"&userID=" +  localStorage.getItem("userID"), (rows)=>{
+    $.getJSON("main.php?records="+ localStorage.getItem("token")+"&userID=" +  localStorage.getItem("userID"), (rows)=>{
         //console.log(rows);
         let avgHint = 0;
         let total = rows.length;
         let streak = 0;
-        let newestStreak = 0
         let avgGuess = 0;
         let lastDate = datefy(rows[0]['date']);
         rows.forEach((record) =>{
-            //console.log(record['date'])
             //console.log(lastDate - datefy(record['date']) <= (1000 * 60 * 60 * 24))
-            if(newestStreak === 0) {
-                if ((lastDate - datefy(record['date'])) <= (1000 * 60 * 60 * 24)) {
-                    streak++;
-                } else {
-                    newestStreak=streak;
-                }
+            if((lastDate - datefy(record['date'])) <= (1000 * 60 * 60 * 24)){
+                streak++;
+            } else {
+                streak = 1;
             }
             lastDate = datefy(record['date']);
             avgGuess += parseInt(record['guesses']);
@@ -553,7 +553,7 @@ function getRecords(){
         })
         avgGuess = Math.round((avgGuess / total) * 100)/100;
         avgHint = Math.round((avgHint / total) * 100)/100;
-        updateWinRecordsRow(total, newestStreak, avgGuess, avgHint);
+        updateWinRecordsRow(total, streak, avgGuess, avgHint);
     })
 }
 

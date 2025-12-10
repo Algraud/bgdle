@@ -310,7 +310,12 @@
             </div>
         </div>
         <div class="col" id="titleCol">
-            <span id="titleLetters">BG</span>dle
+            <div class="row">
+                <span id="titleLetters">BG</span>dle
+            </div>
+            <div class="row">
+                <a href="https://boardgamegeek.com/"><img id="bggLogo" src="img/BGG.png"></a>
+            </div>
         </div>
         <div class="col-md-4 col-sm-12" id="helpCol">
             <span id="usernameTitle" class="correct"></span>
