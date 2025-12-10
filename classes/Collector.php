@@ -11,10 +11,13 @@ class Collector
 
     private int $curlCount = 0;
 
-    public function __construct($db){
+    private array|false $config;
+
+    public function __construct($db, $config){
         $this->GameList = array();
         $this->DB = $db;
         $this->retrieveList();
+        $this->config = $config;
     }
 
     public function retrieveList(): void
@@ -59,8 +62,10 @@ class Collector
         }
         $curlCon = curl_init();
         $param = "id=". $id ."&type=boardgame";
+        $token = $this->config["bgg"]["token"];
         curl_setopt($curlCon, CURLOPT_URL, self::_BGG_API . $param);
         curl_setopt($curlCon, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curlCon, CURLOPT_HEADER, array('Authorization: Bearer ' . $token));
 
         $apiResponse = curl_exec($curlCon);
         if($apiResponse === false){
