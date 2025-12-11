@@ -16,7 +16,7 @@ class BGdle
         $this->config = parse_ini_file("config.ini", true);
         $this->DB = new Database($this->config);
         $this->RANKER = new Ranker();
-        $this->COLLECTOR = new Collector($this->DB);
+        $this->COLLECTOR = new Collector($this->DB, $this->config);
         $this->COMPARER = new Comparer();
     }
 
