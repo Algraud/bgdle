@@ -310,12 +310,7 @@
             </div>
         </div>
         <div class="col" id="titleCol">
-            <div class="row">
-                <div><span id="titleLetters">BG</span>dle</div>
-            </div>
-            <div class="row">
-                <a href="https://boardgamegeek.com/"><img id="bggLogo" src="img/BGG.png"></a>
-            </div>
+            <div><span id="titleLetters">BG</span>dle</div>
         </div>
         <div class="col-md-4 col-sm-12" id="helpCol">
             <span id="usernameTitle" class="correct"></span>
@@ -325,6 +320,9 @@
                 <button type="button" class="btn btn-help btn-title" id="helpBtn">Help</i></button>
             </div>
         </div>
+    </div>
+    <div class="row top-buffer" id="BggRow">
+        <a href="https://boardgamegeek.com/"><img id="bggLogo" src="img/BGG.png"></a>
     </div>
     <div class="row top-buffer">
         <div class="col" id="answerCol">

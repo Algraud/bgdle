@@ -757,7 +757,7 @@ function setupGameObject(idPrefix, boxId, game=null){
     gameEle.classList.add("row", "rounded", "gameBox");
     gameEle.id = idPrefix;
     box.prepend(gameEle);
-    let img = setImage(idPrefix + "image", [ "col-md-4", "centerItem", "col-lg-2", "cellBorderBot", "cellBorderRight", "cellBorderLeft"], game)
+    let img = setImage(idPrefix + "image", [ "col-md-4", "centerItem", "col-lg-2", "cellBorderBot", "cellBorderRight", "cellBorderLeft", "imageCol"], game)
     gameEle.appendChild(img);
     let titleBox = document.createElement("div");
     titleBox.classList.add("col-md-8", "col-lg-3", "d-flex", "flex-column");
@@ -998,7 +998,7 @@ function toggleSpoiler(){
 }
 function createSpoilerForClipboard(e){
     let clipBtn = e.currentTarget;
-    let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on https://www.bgdle.com"
+    let text = "BGdle: Guessed the game in " + guessList.length + " guesses on " + dailyDate + " (" + hints + " hints used). Try your luck on https://www.bgdle.org"
     if(spoilerIsChecked) {
         text += " \n!SPOILER! " + dailyDate + " guesses: "
         if (clipBtn.id === "spoilerDiscordButton") {

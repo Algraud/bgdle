@@ -1,7 +1,7 @@
 # bgdle
 A board game and wordle inspired game
 
-Link: www.bgdle.com
+Link: www.bgdle.org
 
 This is a hobby project.
 

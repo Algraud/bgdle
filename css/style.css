@@ -10,6 +10,21 @@
     --godaGradient: #EAF3EA;
 }
 
+body, html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+button, .btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+}
+
 .modal {
     --bs-modal-bg: var(--godaBG);
     --bs-modal-header-border-color: var(--godaRed);
@@ -160,6 +175,9 @@ body{
     background: linear-gradient(180deg,var(--godaWhite), var(--godaGradient));
     margin-top: 10px;
 }
+.gameBox > * {
+    min-width: 0;
+}
 .cellBorderTop{
     border-top: 1px solid var(--godaBlack);
 }
@@ -207,6 +225,7 @@ body{
 .centerItem{
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 #winScreen{
     width: 550px;
@@ -362,3 +381,112 @@ body{
 #bggLogo{
     height: 55px;
 }
+/* ===== MOBILE ===== */
+
+/* Prevent iOS zoom on input focus */
+input, select, textarea {
+    font-size: 16px !important;
+}
+
+/* Make images more responsive */
+.img-fluid {
+    max-height: 30vh; /* Reduced from 40vh for mobile */
+}
+
+
+
+/* Fix legend on mobile - hide or make it overlay properly */
+@media only screen and (max-width: 768px) {
+    #legend {
+        width: 180px;
+        right: -180px;
+        z-index: 1000;
+    }
+
+    #legendTab {
+        left: -35px;
+        width: 35px;
+        height: 60px;
+    }
+
+    #legendTab div {
+        right: 60px;
+        top: 20px;
+        width: 140px;
+        font-size: 14px;
+    }
+
+    #legendBody {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* Improve title section for tablets */
+@media only screen and (max-width: 768px) {
+    #titleCol {
+        font-size: 36px; /* Reduced from 48px */
+    }
+
+    #title {
+        font-size: 20px; /* Reduced from 24px */
+    }
+
+    #dateCol {
+        font-size: 16px; /* Reduced from 18px */
+    }
+
+    #loginIcon {
+        font-size: 32px; /* Reduced from 42px */
+    }
+
+    .btn-title {
+        font-size: 1.4rem; /* Reduced from 1.8rem */
+    }
+
+    /* Stack the title row vertically */
+    #titleRow {
+        text-align: center;
+    }
+
+    #helpCol {
+        text-align: center !important;
+        margin-top: 10px;
+    }
+}
+
+@media only screen and (max-width: 576px) {
+    #titleCol {
+        font-size: 28px;
+        padding-bottom: 10px;
+    }
+
+    #title {
+        font-size: 16px;
+    }
+    #dateCol {
+        font-size: 14px;
+        padding-top: 5px;
+    }
+    #loginIcon {
+        font-size: 28px;
+        padding: 2px 4px 2px 1px;
+    }
+    .btn-title {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+
+    .imageCol {
+        flex-direction: column !important;
+        max-width: 100%;
+        flex: 0 0 100%;
+        margin-bottom: 10px;
+    }
+
+    .searchGame {
+        height: 80px; /* Reduced from 100px */
+    }
+
+}
+
