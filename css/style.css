@@ -19,8 +19,8 @@ body, html {
 }
 
 button, .btn {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 32px;
+    min-width: 32px;
     padding: 12px 16px;
 }
 
@@ -117,22 +117,27 @@ body{
 }
 #titleRow{
     background: var(--godaWhite);
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
 }
 #dateCol{
     padding-top: 10px;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: bold;
 }
 #title{
-    font-size: 24px;
+    font-size: 18px;
 }
 #titleCol{
     font-weight: 1000;
-    font-size: 48px;
+    font-size: 36px;
     text-shadow: -1px -1px 0 var(--godaBlack), 1px -1px 0 var(--godaBlack), -1px 1px 0 var(--godaBlack), 1px 1px 0 var(--godaBlack);
 }
 #titleLetters{
     color: var(--godaRed)
+}
+.biggerTitle{
+    font-size: 100px;
 }
 #helpCol{
     text-align: end;
@@ -143,6 +148,7 @@ body{
     text-align: center;
 }
 .btn-help {
+    background-color: var(--godaBG);
     --bs-btn-font-weight: 600;
     --bs-btn-color: var(--godaGreen);
     /*--bs-btn-bg: var(--bd-violet-bg);*/
@@ -156,10 +162,25 @@ body{
     --bs-btn-active-border-color: #{shade-color($godaGreen, 20%)};
 }
 .btn-title{
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     padding: 0 0 0 0;
     --bs-btn-border-width: 2px;
     --bs-btn-border-radius: 1rem;
+}
+.btnToggle{
+    background-color: var(--godaGradient);
+    color: var(--godaGreen);
+    font-weight: 600;
+    border: 1px solid var(--godaGreen);
+}
+.btn-check:checked + .btnToggle{
+    color: var(--godaRed);
+    background-color: var(--godaGradient);
+}
+.btn-check:not(:checked) + .btnToggle:hover{
+    color: var(--godaBlack);
+    background-color: var(--godaWhite);
+    border: 1px solid var(--godaBlack);
 }
 .titleBtnIcon{
     display: flex;
@@ -303,12 +324,11 @@ body{
 }
 #curtainTitle{
     position: absolute;
-    width: 300px;
     height: 120px;
     left: 50%;
     top: 50%;
     margin: -60px auto 0 -150px;
-    font-size: 100px;
+    font-size: 80px;
     font-weight: bold;
 }
 .lds-ring {
@@ -380,6 +400,118 @@ body{
 #bggLogo{
     height: 55px;
 }
+
+#board, #boardStats{
+    margin: 2%;
+    padding: 1%;
+    background-color: var(--godaWhite);
+    border-radius: 50px;
+}
+.dokuBorderRight{
+    border-right: 1px dotted var(--godaGrey);
+}
+.dokuBorderBottom{
+    border-bottom: 1px dotted var(--godaGrey);
+}
+.dokuPanel{
+/*    border: 1px solid var(--godaGrey);*/
+/*    background: linear-gradient(180deg, var(--godaWhite), var(--godaGradient));*/
+    margin: 1vmin;
+    background-color: var(--godaBG);
+    width: 18vmin;
+    height: 18vmin;
+    border-radius: 3vmin;
+    padding: 1vmin;
+    position: relative;
+}
+.dokuHead, .dokuPanel{
+    max-width: 20vh;
+}
+.dokuSide, .dokuPanel{
+    max-height: 20vw;
+}
+.dokuHead{
+    min-height: 5vh;
+    width: 18vmin;
+    margin-left: 2vmin;
+
+}
+.dokuSide{
+    height: 20vmin;
+}
+.dokuRow{
+    justify-content: center;
+}
+.dokuSide, .dokuPanel, .dokuHead{
+    align-content: center;
+}
+.dokuSide, .dokuHead{
+    font-size: clamp(0.7rem, 1.5vw, 1.75rem);
+    color: var(--godaRed);
+    transition: background-color 3s ease, box-shadow 3s ease;
+}
+.underTitle{
+    font-size: 1rem;
+    color: var(--godaRed);
+}
+.gameDoku{
+    background-color: var(--godaWhite);
+    border-radius: 10px;
+    margin-bottom: 2px;
+    padding: 2px 0px;
+}
+.dokuPanelImg{
+    max-height: 80%;
+    overflow: hidden;
+}
+.dokuPanelTitle{
+    font-size: clamp(0.6rem, 1.25vmin, 1.75rem);
+    max-height: 20%;
+    font-weight: bold;
+}
+.dokuImg{
+    object-fit: contain;
+    max-height: 16vmin !important;
+    max-width: 20vmin;
+}
+.categoryHeader{
+    font-weight: bold;
+}
+
+.wrongFlash{
+    background-color: var(--godaRed);
+    box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.7); /* Red glow */
+}
+#counterCol{
+    color: var(--godaBlue);
+    font-weight: bold;
+    font-size: 18px;
+    text-shadow: -1px -1px 0 var(--godaWhite), 1px -1px 0 var(--godaWhite), -1px 1px 0 var(--godaWhite), 1px 1px 0 var(--godaWhite);
+    margin-top: 1%;
+}
+.strong-underline {
+    border-radius: 10px;
+    box-shadow: 0 5px 0 0 var(--godaBlue);
+}
+.placeholderQuestionMark{
+    color: var(--godaGreen);
+    font-size: 12vmin;
+    font-weight: bold;
+}
+
+.onTop{
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: var(--godaBlue);
+    font-weight: bold;
+    text-shadow:
+            -1px -1px 0 var(--godaGradient),
+            1px -1px 0 var(--godaGradient),
+            -1px  1px 0 var(--godaGradient),
+            1px  1px 0 var(--godaGradient);
+}
+
 /* ===== MOBILE ===== */
 
 /* Prevent iOS zoom on input focus */
@@ -478,13 +610,25 @@ input, select, textarea {
 
     .imageCol {
         flex-direction: column !important;
-        max-width: 100%;
-        flex: 0 0 100%;
-        margin-bottom: 10px;
     }
 
     .searchGame {
         height: 80px; /* Reduced from 100px */
+    }
+
+    .dokuPanelTitle {
+        position: relative;
+        top: -70%;
+        text-shadow:
+                -1px -1px 0 var(--godaWhite),
+                1px -1px 0 var(--godaWhite),
+                -1px  1px 0 var(--godaWhite),
+                1px  1px 0 var(--godaWhite);
+    }
+
+    .dokuPanelImg{
+        height: 100%;
+        max-height: 100%;
     }
 
 }

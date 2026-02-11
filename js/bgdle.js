@@ -51,7 +51,12 @@ function setupEventListeners(){
     document.getElementById("winBtn").addEventListener("click", toggleWinPage);
     document.getElementById("winCloseButton").addEventListener("click", toggleWinPage)
     document.getElementById("spoilerCheck").addEventListener("click", toggleSpoiler);
+    document.getElementById("bgdokuBtn").addEventListener("click", goToBgdoku);
 
+}
+
+function goToBgdoku(){
+    window.open("http://www.bgdle.org/bgdoku.php", "_blank");
 }
 
 function setupModalEvents(){
@@ -233,7 +238,7 @@ function loadLocal(){
             }
         }
         recordAdded = (localStorage.getItem("recordAdded") === "true") ;
-        let guessJson= JSON.parse(localStorage.getItem("guessList"));
+        let guessJson = JSON.parse(localStorage.getItem("guessList"));
         guessJson.forEach((guess) =>{
             selectGame(guess);
         })
@@ -353,13 +358,17 @@ function clearSearch(){
 }
 
 function searchGames(event){
+
     let searchstring = event.target.value;
+
+    console.log("Searching " + searchstring);
     if(searchstring===""){
         clearSearch()
         return
     }
     if(filterObj.attr === "" || filterObj.value === "") {
         if(searchAjax !== undefined){
+            console.log("Aborting Ajax")
             searchAjax.abort();
         }
         searchAjax =  $.getJSON("main.php?search=" + searchstring, setSearchedGames);
@@ -397,6 +406,7 @@ function updateHintCounter(increase){
 }
 
 function setSearchedGames(games){
+    console.log("Showing Games...")
     let ele = document.getElementById("searchResults");
     ele.innerHTML = ""
     ele.classList.add("d-none")

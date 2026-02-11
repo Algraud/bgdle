@@ -14,7 +14,11 @@ if(isset($_SERVER['argv'][1])){
         print_r($main->getGame($_SERVER['argv'][2]));
     }
     if($_SERVER['argv'][1]==="update") {
-        $main->updateGames();
+        if($_SERVER['argv'][2]==="all"){
+            $main->updateDBGames();
+        } else {
+            $main->updateGames();
+        }
     }
     if($_SERVER['argv'][1]==="stats") {
         $main->stats();
@@ -25,9 +29,27 @@ if(isset($_SERVER['argv'][1])){
     if($_SERVER['argv'][1]==="dailyTest") {
         $main->dailyTest($_SERVER['argv'][2]);
     }
+    if($_SERVER['argv'][1]==="addCategory"){
+        $main->addCategory($_SERVER['argv'][2], $_SERVER['argv'][3], $_SERVER['argv'][4]);
+    }
+    if($_SERVER['argv'][1]==="expand"){
+        if($_SERVER['argv'][2] === "file"){
+            $main->expandGames(true);
+        } else {
+            $main->expandGames(false, $_SERVER['argv'][2], $_SERVER['argv'][3]);
+        }
+    }
+    if($_SERVER['argv'][1]==="testCategories"){
+        $main->testCategories($_SERVER['argv']);
+    }
+    echo "\n";
+    return;
 }
 if(isset($_GET['request'])){
     echo $main->attemptGuess($_GET['game'], $_GET['date']);
+}
+if(isset($_GET['dokuguess'])){
+    echo $main->attemptDokuGuess($_GET['game'], $_GET['date'], $_GET['pos']);
 }
 if(isset($_GET['gamelist'])){
     echo $main->getGameList();
@@ -35,8 +57,11 @@ if(isset($_GET['gamelist'])){
 if(isset($_GET['search'])){
     echo $main->getSimilarGames($_GET['search']);
 }
+if(isset($_GET['searchdoku'])){
+    echo $main->getSimilarGames($_GET['searchdoku'], true);
+}
 if(isset($_GET['searchadv'])){
-    echo $main->getSimilarGames($_GET['searchadv'], $_GET['attr'], $_GET['value']);
+    echo $main->getSimilarGames($_GET['searchadv'], false, $_GET['attr'], $_GET['value']);
 }
 if(isset($_GET['imglink'])){
     echo $main->getImageLink($_GET['imglink']);
@@ -51,9 +76,26 @@ if(isset($_GET['login'])){
 if(isset($_GET['loginToken'])){
     echo $main->checkToken($_GET['loginToken'], $_GET['id']);
 }
+if(isset($_GET['getToken'])){
+    echo $main->saveToken(0);
+}
 if(isset($_GET['record'])){
     echo $main->addRecord((int)$_GET['record'],$_GET['token'],$_GET['userID'],$_GET['date'],(int)$_GET['guesses'],(int)$_GET['hints']);
 }
 if(isset($_GET['records'])){
     echo $main->getRecords($_GET['records'], $_GET['userID']);
+}
+if(isset($_GET['dailydoku'])){
+    echo $main->getDokuCategories($_GET['dailydoku']);
+}
+if(isset($_GET['dailyStatsDoku'])){
+    echo $main->getDokuStats($_GET['dailyStatsDoku'], $_GET['token']);
+}
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['recorddoku'])) {
+        $date = $_POST['recorddoku'];
+        $grid = $_POST['grid'];
+        $token = $_POST['userToken'];
+        echo $main->addDokuRecord($date, $grid, $token);
+    }
 }
