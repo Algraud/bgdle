@@ -120,13 +120,18 @@ class BGdle
             $i++;
             echo $i . "\n";
             $newCat = $this->DB->getCategories(count($result['pos']),$used);
-            $used = array_merge($used, $newCat);
-            $newAr = [];
-            for($i=0; $i < count($result['pos']);$i++){
-                $newAr[$result['pos'][$i]] = $newCat[$i];
+            $restart = false;
+            if($newCat === false){
+                $restart = true;
+            } else {
+                $used = array_merge($used, $newCat);
+                $newAr = [];
+                for ($i = 0; $i < count($result['pos']); $i++) {
+                    $newAr[$result['pos'][$i]] = $newCat[$i];
+                }
+                $dailyDokuCol = array_replace($dailyDokuCol, $newAr);
             }
-            $dailyDokuCol = array_replace($dailyDokuCol, $newAr);
-            if($dailyDokuCol === false||count($dailyDokuCol) < 3){
+            if($restart || $dailyDokuCol === false||count($dailyDokuCol) < 3){
                 echo "\nREDO!!!!!!!!!!!\ns";
                 $used = [];
                 $dailyDokuRow = $this->DB->getCategories(3, [], $preTopCats);
