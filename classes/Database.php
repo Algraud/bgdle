@@ -105,7 +105,8 @@ class Database
     public function alterTable(){
 
         $this->DB->query('ALTER TABLE games
-            ADD families VARCHAR,
+            ADD families VARCHAR;
+            ALTER TABLE games
             ADD img VARCHAR;
             ');
 
@@ -263,7 +264,7 @@ class Database
             $pattern = "(type, value, weight, description)";
             $values = "('" . $type . "', '" . $value . "', '" . $weight . "', '".$description."')";
             $sql = 'INSERT INTO categories ' . $pattern . ' VALUES ' . $values;
-            echo $sql;
+            //echo $sql;
             $this->DB->query($sql);
         }
     }
