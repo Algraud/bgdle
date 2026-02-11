@@ -15,14 +15,15 @@ class Ranker
         $this->rankedList = [];
     }
 
-    public function rankGames(): array
+    public function rankGames($firstPage = self::_FIRST_PAGE, $lastPage = self::_LAST_PAGE): array
     {
-        $pages = $this->getPages();
+        $pages = $this->getPages($firstPage, $lastPage);
         $this->rankedList = $this->getGameIds($pages);
         return $this->rankedList;
     }
 
-    private function getPages($firstPage = self::_FIRST_PAGE, $lastPage = self::_LAST_PAGE): array{
+    private function getPages($firstPage, $lastPage): array{
+        echo "Getting Pages from ". $firstPage ." to ". $lastPage ."\n";
         $jsonPages = [];
         for ($i = $firstPage; $i <= $lastPage; $i++){
             $curlCon = curl_init();
@@ -59,6 +60,19 @@ class Ranker
         $max = count($gameIds);
         $rnd = random_int(0, $max-1);
         return $gameIds[$rnd];
+    }
+    public function pickDailyDoku(array $catIds){
+        $max = count($catIds);
+        $doku = [];
+        for ($i=0;$i<7;$i++){
+            $rnd = random_int(0, $max-1);
+            IF(in_array($catIds[$rnd],$doku, false)){
+                $i--;
+            } else {
+                $doku = [$catIds[$rnd]];
+            }
+        }
+        return $doku;
     }
 
     public function getRankedListOfIds(): array

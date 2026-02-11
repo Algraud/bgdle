@@ -21,7 +21,7 @@ class Database
 
     private function createTables(): void
     {
-
+        //echo "Create Tables...";
         $this->DB->query('CREATE TABLE IF NOT EXISTS "games" (
             "id" INTEGER PRIMARY KEY NOT NULL,
             "name" VARCHAR,
@@ -37,7 +37,9 @@ class Database
             "artists" VARCHAR,
             "publisher" VARCHAR,
             "description" VARCHAR,
-            "randomorder" REAL                                
+            "randomorder" REAL,
+            "img" VARCHAR,
+            "families" VARCHAR                                
         )');
         $this->DB->query('CREATE TABLE IF NOT EXISTS "daily" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -50,6 +52,21 @@ class Database
             "password" VARCHAR,
             "email" VARCHAR,
             "banned" INTEGER
+        )');
+        $this->DB->query('CREATE TABLE IF NOT EXISTS "recordsDoku" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "userID" INTEGER,
+            "date" VARCHAR,
+            "doku11" INTEGER,
+            "doku12" INTEGER,
+            "doku13" INTEGER,
+            "doku21" INTEGER,
+            "doku22" INTEGER,
+            "doku23" INTEGER,
+            "doku31" INTEGER,
+            "doku32" INTEGER,
+            "doku33" INTEGER,
+            "ip" VARCHAR
         )');
         $this->DB->query('CREATE TABLE IF NOT EXISTS "records" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -65,22 +82,44 @@ class Database
             "token" VARCHAR,
             "date" INTEGER
         )');
+        $this->DB->query('CREATE TABLE IF NOT EXISTS "categories" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "type" VARCHAR,
+            "value" VARCHAR,
+            "weight" INTEGER,
+            "description" VARCHAR
+        )');
+        $this->DB->query('CREATE TABLE IF NOT EXISTS "dailyDoku" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            "date" VARCHAR,
+            "cat1" VARCHAR,
+            "cat2" VARCHAR,
+            "cat3" VARCHAR,
+            "cat4" VARCHAR,
+            "cat5" VARCHAR,
+            "cat6" VARCHAR
+        )');
+        //echo "Done\n";
     }
 
     public function alterTable(){
+
         $this->DB->query('ALTER TABLE games
-            ADD randomorder REAL;
-');
+            ADD families VARCHAR,
+            ADD img VARCHAR;
+            ');
+
     }
 
     public function insertGame(Game $game, bool $force = false): void
     {
         $result = $this->DB->query('SELECT * FROM games WHERE id="'.$game->id.'"');
         if($force || !$result->fetchArray()){ //if no row to fetch
-            $pattern = "(id, name, year, minplayers, maxplayers, minplaytime, maxplaytime, minage, categories, mechanics, designers, artists, publisher)";
+            $pattern = "(id, name, year, minplayers, maxplayers, minplaytime, maxplaytime, minage, categories, mechanics, designers, artists, families, publisher, img)";
             $values = $game->getInsertableGame($pattern);
+            //echo $values . "\n";
             $sql = 'INSERT OR REPLACE INTO games '.$pattern.' VALUES '.$values;
-            //echo $sql;
+            //echo $sql . "\n";
             $this->DB->query($sql);
 
         }
@@ -92,9 +131,57 @@ class Database
         }
         return $this->createGameFromRow($gameSql);
     }
+    public function getCategory($id): array|false{
+        $result = $this->DB->query('SELECT * FROM categories WHERE id="'.$id.'"');
+        if(!($catSql = $result->fetchArray())) { //if no row to fetch
+            return false;
+        }
+        return ["type" => $catSql['type'], "value" => $catSql['value'], "description" => $catSql['description']];
+    }
+    public function getCategories($count, $except = [], $pre = []):array|false{
+        if($count < 1){
+            return false;
+        }
+        $doku = [];
+        if(count($pre)>0){
+            $count -= count($pre);
+            $where = implode(',', $pre);
+            $result = $this->DB->query('SELECT *, abs(random()) * weight AS weighted_random FROM categories WHERE id in ('.$where.') ORDER BY weighted_random ASC');
+            if (!($catSql = $result->fetchArray())) { //if no row to fetch
+                return false;
+            }
+            $doku[] = $catSql;
+            for ($i = 1; $i < count($pre); $i++) {
+                $doku[] = $result->fetchArray();
+            }
+        }
+        $where = "";
+        if(count($except) > 0){
+            $exceptIDs = [];
+            foreach ($except as $cat){
+                $exceptIDs[] = $cat['id'];
+            }
+            $where = " WHERE id NOT IN (".SQLite3::escapeString(implode(',',$exceptIDs)).")";
+        }
+        if($count > 0) {
+            $result = $this->DB->query('SELECT *, abs(random()) * weight AS weighted_random FROM categories' . $where . ' ORDER BY weighted_random ASC LIMIT ' . $count);
+            if (!($catSql = $result->fetchArray())) { //if no row to fetch
+                return false;
+            }
+            $doku[] = $catSql;
+            for ($i = 1; $i < $count; $i++) {
+                $doku[] = $result->fetchArray();
+            }
+        }
+        return $doku;
+    }
 
-    public function getAllGames(): array|false{
-        $result = $this->DB->query('SELECT * FROM games');
+    public function getAllGames($random = false): array|false{
+        $sql = 'SELECT * FROM games';
+        if($random){
+            $sql .= ' ORDER BY RANDOM()';
+        }
+        $result = $this->DB->query($sql);
         $games = [];
         while($gameSql = $result->fetchArray()){
             $games[] = $this->createGameFromRow($gameSql);
@@ -108,7 +195,7 @@ class Database
             $row['minplaytime'],$row['maxplaytime'],$row['minage'],
             explode(";", $row['categories']),explode(";",$row['mechanics']),
             explode(";",$row['designers']), explode(";", $row['artists']),
-            $row['publisher']);
+            $row['publisher'], explode(";", $row['families']), $row['img']);
     }
 
     public function getDailyGame($date):Game|false{
@@ -117,6 +204,17 @@ class Database
             return false;
         }
         return $this->getGame($dailySql['gameID']);
+    }
+    public function getDailyDoku($date):array|false{
+        $result = $this->DB->query('SELECT * FROM dailyDoku WHERE date="'.$date.'"');
+        if(!($dailySql = $result->fetchArray())) { //if no row to fetch
+            return false;
+        }
+        $doku = array();
+        for ( $i=1; $i < 7; $i++){
+            $doku[] = $this->getCategory($dailySql["cat" . $i]);
+        }
+        return $doku;
     }
     public function insertDaily(Game $game, $date):void{
         $result = $this->DB->query('SELECT * FROM daily WHERE date="'.$date.'"');
@@ -129,8 +227,48 @@ class Database
 
         }
     }
+    public function insertDailyDoku(array $cats, $date):bool{
+        //print_r($cats);
+        $result = $this->DB->query('SELECT * FROM dailyDoku WHERE date="'.$date.'"');
+        if(!$result->fetchArray()){ //if no row to fetch
+            $pattern = "(date, cat1, cat2, cat3, cat4, cat5, cat6)";
+            $values = "(". $date . ", " . $cats[0]['id'] . ", " . $cats[1]['id'] . ", " . $cats[2]['id'] . ", " . $cats[3]['id'] . ", " . $cats[4]['id'] . ", " . $cats[5]['id'] . ")";
+            $sql = 'INSERT INTO dailyDoku '.$pattern.' VALUES '.$values;
+            //echo $sql;
+            $this->DB->query($sql);
 
-    public function getSimilarName(string $name, string $attr, string $value): array{
+            $this->increaseWeightDoku($cats);
+            return true;
+        }
+        return false;
+    }
+    public function increaseWeightDoku(array $categories){
+        $sql = "UPDATE categories SET weight = (weight + 1) WHERE id IN (";
+        $first = true;
+        foreach ($categories as $category){
+            if(!$first){
+                $sql .= ", ";
+            }
+            $sql .= $category['id'];
+            $first = false;
+        }
+        $sql .= ")";
+        $this->DB->query($sql);
+    }
+    public function insertCategory(string $type, string $value, int $weight, string $description =""):void{
+        $value = SQLite3::escapeString($value);
+        $description = SQLite3::escapeString($description);
+        $result = $this->DB->query('SELECT * FROM categories WHERE type="'.$type.'" AND value="'.$value.'"');
+        if(!$result->fetchArray()) { //if no row to fetch
+            $pattern = "(type, value, weight, description)";
+            $values = "('" . $type . "', '" . $value . "', '" . $weight . "', '".$description."')";
+            $sql = 'INSERT INTO categories ' . $pattern . ' VALUES ' . $values;
+            echo $sql;
+            $this->DB->query($sql);
+        }
+    }
+
+    public function getSimilarName(string $name, bool $sort, string $attr, string $value): array{
         $name = SQLite3::escapeString($name);
         $sql = "SELECT * FROM games WHERE name LIKE '%" . $name . "%'";
         if($attr !== ""){
@@ -142,7 +280,18 @@ class Database
                 $sql .= "AND " . $attr . "='" . $value . "'";
             }
         }
-        $sql .= " ORDER BY randomOrder LIMIT 10";
+        if($sort){
+            $sql .= " ORDER BY";
+            $sql .= " Case";
+            $sql .= " WHEN name = '" . $name . "' THEN 1";
+            $sql .= " WHEN name LIKE '" . $name . "%' THEN 2";
+            $sql .= " WHEN name LIKE '%" . $name . "%' THEN 3";
+            $sql .= " ELSE 4 END";
+        }
+        else {
+            $sql .= " ORDER BY randomOrder";
+        }
+        $sql .= " LIMIT 10";
         $result = $this->DB->query($sql);
         $games = [];
         while($gameSql = $result->fetchArray()){
@@ -187,6 +336,9 @@ class Database
     }
     public function getUsername(string $id): string
     {
+        if($id === "0") {
+            return "";
+        }
         $result = $this->DB->query('SELECT * FROM users WHERE id="'.$id.'"');
         $user = $result->fetchArray();
         if(!$user) {
@@ -303,6 +455,31 @@ class Database
         return $records;
     }
 
+    public function getDokuRecords($date, $onlySystem = false):array|bool{
+        $sql = "SELECT * FROM recordsDoku WHERE date ='".$date."'";
+        if($onlySystem){
+            $sql .= " AND ip='system'";
+        } else {
+            $sql .= " AND ip<>'system'";
+        }
+        try{
+            $result = $this->DB->query($sql);
+        } catch (\Exception ){
+            //echo "error";
+            return false;
+        }
+        $records = [];
+        while($recordSql = $result->fetchArray()){
+            for ($y = 1; $y < 4; $y++){
+                for ($x = 1; $x < 4; $x++){
+                    $recordSql["doku".$y.$x] = $this->getGame($recordSql["doku".$y.$x]);
+                }
+            }
+            $records[] = $recordSql;
+        }
+        return $records;
+    }
+
     public function deleteRecords(bool $allRecords=false): bool
     {
         $sql = "DELETE FROM records";
@@ -317,6 +494,42 @@ class Database
             return false;
         }
         return true;
+    }
+
+    public function insertRecordDoku( string $date, $grid, string $ip): bool|int
+    {
+        $result = $this->DB->query('SELECT * FROM recordsDoku WHERE ip="'.$ip.'" AND date="'.$date.'"');
+
+        if(!$result->fetchArray()){ //if no row to fetch
+            $pattern = "(userID, date";
+            $values = "('', '" . $date . "'";
+            $count = 0;
+            for ($y = 1; $y < 4; $y++){
+                for($x=1; $x<4; $x++){
+                    $value = $grid[$count];
+                    if($value instanceof Game){
+                        $value = $value->id;
+                    }
+                    //echo $value;
+                    $count++;
+                    $pattern .= ", doku" . $y . $x;
+                    $values .= ", '" . $value . "'";
+                }
+            }
+            $pattern .= ", ip)";
+            $values .= ", '".$ip."')";
+            $sql = 'INSERT INTO recordsDoku '.$pattern.' VALUES '.$values;
+            //echo $sql;
+            try {
+                $this->DB->query($sql);
+
+            } catch (\Exception ){
+                //echo "error";
+                return false;
+            }
+            return $this->DB->lastInsertRowID();
+        }
+        return false;
     }
     public function deleteTokens(bool $allTokens=false): bool
     {

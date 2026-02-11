@@ -106,8 +106,7 @@
                         </div>
                         <div class="row">
                             <div class="col">
-                                <br><b>Notes from me:</b> <br>The game feels a bit too hard for me, and I'm looking into what can I give as hints that could be given automatically (without me having to manually pick them). I added a few that might be helpful.
-                                Any ideas or issues? Please make an issue on <a href="https://github.com/Algraud/bgdle/issues" target="_blank">Github</a> or <a href = "https://discord.gg/HtPdy3WsVk" target="_blank">Discord.</a>
+
                             </div>
                         </div>
                     </div>
@@ -116,7 +115,7 @@
                     <div class="row">
                         <div class="col">
                             <button type="button" class="btn btn-help" id="howToPlayBtn" data-bs-target="#tutorial1" data-bs-toggle="modal">How To Play?</button>
-                            <button type="button" class="btn btn-help" id="historyBtn" disabled >History Mode</button>
+                            <button type="button" class="btn btn-help" id="bgdokuBtn" >Try BGDOKU!</button>
                             <button type="button" class="btn btn-help" id="playDailyBtn">Play Daily</button>
                         </div>
                     </div>

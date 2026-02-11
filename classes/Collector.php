@@ -77,6 +77,7 @@ class Collector
             return false;
         }
         $this->saveImage($id, $xml->item->image);
+        $img = $xml->item->image;
         $name = $xml->item->name->attributes()['value'];
         if($echo) {
             echo " " . $name . " ";
@@ -87,6 +88,7 @@ class Collector
         $minplaytime = $xml->item->minplaytime->attributes()['value'];
         $maxplaytime = $xml->item->maxplaytime->attributes()['value'];
         $minage = $xml->item->minage->attributes()['value'];
+        $family = [];
         $categories = [];
         $mechanics = [];
         $designers = [];
@@ -107,6 +109,9 @@ class Collector
                 case "boardgameartist":
                     $artists[] = $obj->attributes()['value'];
                     break;
+                case "boardgamefamily":
+                    $family[] = $obj->attributes()['value'];
+                    break;
                 case "boardgamepublisher":
                     if($publisher === ""){
                         $publisher = $obj->attributes()['value'];
@@ -120,14 +125,14 @@ class Collector
             echo " END\n";
         }
         $game = new Game($id, $name, $year, $minplayers, $maxplayers, $minplaytime, $maxplaytime, $minage, $categories,
-            $mechanics, $designers, $artists, $publisher);
+            $mechanics, $designers, $artists, $publisher, $family, $img);
         $this->DB->insertGame($game, $force);
         return $game;
     }
 
     private function findGame(int $id, bool $echo = true, $force = false): false|Game
     {
-        if($force || !($game = $this->DB->getGame($id))){
+        if($force || !($game = $this->DB->getGame($id)) || count($game->family) < 1){
             $this->curlCount++;
             $game = $this->getGameCurl($id, $echo, $force);
             $this->GameList[] = $game;
@@ -139,9 +144,15 @@ class Collector
         return $game;
     }
 
-    public function getGame(int $id, $force = false):Game|false{
+    public function getGame(int $id, $force = false, $echo = false, $sleep = false):Game|false{
+        if($sleep){
+            if($this->curlCount >=5){
+                sleep(9);
+                $this->curlCount = 0;
+            }
+        }
         if($force){
-            return $this->findGame($id, false, $force);
+            return $this->findGame($id, $echo, $force);
         }
         foreach ($this->GameList as $game){
             if($id === $game->id){
@@ -150,6 +161,7 @@ class Collector
         }
         return $this->findGame($id, false);
     }
+
 
     private function saveImage($id, $url): void
     {
