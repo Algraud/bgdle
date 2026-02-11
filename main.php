@@ -39,6 +39,9 @@ if(isset($_SERVER['argv'][1])){
             $main->expandGames(false, $_SERVER['argv'][2], $_SERVER['argv'][3]);
         }
     }
+    if($_SERVER['argv'][1]==="expandCategories"){
+        $main->expandCategories($_SERVER['argv'][2]);
+    }
     if($_SERVER['argv'][1]==="testCategories"){
         $main->testCategories($_SERVER['argv']);
     }

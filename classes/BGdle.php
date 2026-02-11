@@ -20,6 +20,20 @@ class BGdle
         $this->COMPARER = new Comparer();
     }
 
+    public function expandCategories($fileName):void{
+        if($fileName ==""){
+            echo "\n Need file name argument.";
+            return;
+        }
+        $lines = file($fileName, FILE_IGNORE_NEW_LINES);
+        echo "\n";
+        foreach ($lines as $line){
+            $csv = str_getcsv($line);
+            echo "Adding {$csv[0]} {$csv[1]} -- {$csv[2]}\n";
+            $this->addCategory($csv[0], $csv[1], $csv[2]);
+        }
+    }
+
     public function expandGames(bool $useFile, int $startCount = 0, int $maxCount = 50):void{
         $countFile = "csvValue.txt";
         if($useFile){
