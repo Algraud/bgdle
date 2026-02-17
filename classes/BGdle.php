@@ -80,7 +80,7 @@ class BGdle
         $this->randomizeOrder();
         $dailyID = $this->RANKER->pickDaily($gameIds);
         $daily = $this->getGame($dailyID);
-        $this->DB->insertDaily($daily, date("Ymd"));
+        $this->DB->insertDaily($daily, date('Ymd',strtotime("+1 days")));
         $this->setupFreePlay($games);
         $this->postStats(date('Ymd',strtotime("-1 days")));
         $this->DB->deleteRecords();
