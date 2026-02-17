@@ -446,7 +446,7 @@ body{
     align-content: center;
 }
 .dokuSide, .dokuHead{
-    font-size: clamp(0.7rem, 1.5vw, 1.75rem);
+    font-size: clamp(0.7rem, 1.5vw, 1.5rem);
     color: var(--godaRed);
     transition: background-color 3s ease, box-shadow 3s ease;
 }
