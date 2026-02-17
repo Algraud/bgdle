@@ -75,11 +75,13 @@ class BGdle
 
     public function setup(): void
     {
-        $gameIds = $this->RANKER->rankGames();
-        $games = $this->COLLECTOR->populateList($gameIds);
+        //$gameIds = $this->RANKER->rankGames();
+        //$games = $this->COLLECTOR->populateList($gameIds);
+        $games = $this->DB->getAllGames();
         $this->randomizeOrder();
-        $dailyID = $this->RANKER->pickDaily($gameIds);
-        $daily = $this->getGame($dailyID);
+        //$dailyID = $this->RANKER->pickDaily($gameIds);
+        //$daily = $this->getGame($dailyID);
+        $daily = $this->RANKER->pickDaily($games);
         $this->DB->insertDaily($daily, date('Ymd',strtotime("+1 days")));
         $this->setupFreePlay($games);
         $this->postStats(date('Ymd',strtotime("-1 days")));
@@ -167,7 +169,7 @@ class BGdle
                 }
                 echo "adding system" . $i . " to record\n";
                 //print_r($grid);
-                $this->addDokuRecord(date("Ymd"), $grid, "system" . $i);
+                $this->addDokuRecord(date("Ymd",strtotime("+1 days")), $grid, "system" . $i);
             }
         }
     }

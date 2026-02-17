@@ -18,6 +18,7 @@ class Ranker
     public function rankGames($firstPage = self::_FIRST_PAGE, $lastPage = self::_LAST_PAGE): array
     {
         $pages = $this->getPages($firstPage, $lastPage);
+        print_r($pages);
         $this->rankedList = $this->getGameIds($pages);
         return $this->rankedList;
     }
@@ -27,6 +28,10 @@ class Ranker
         $jsonPages = [];
         for ($i = $firstPage; $i <= $lastPage; $i++){
             $curlCon = curl_init();
+            curl_setopt($curlCon, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+            curl_setopt($curlCon, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curlCon, CURLOPT_SSL_VERIFYPEER, true); // keep true in production
+            curl_setopt($curlCon, CURLOPT_TIMEOUT, 30);
             curl_setopt($curlCon, CURLOPT_URL, self::_BGG_GAMELIST_URL . $i);
             curl_setopt($curlCon, CURLOPT_RETURNTRANSFER, true);
 
