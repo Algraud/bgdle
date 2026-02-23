@@ -46,7 +46,7 @@ function addWinButton(){
 }
 
 function addRecord(){
-    console.log(userToken);
+    //console.log(userToken);
     let grid = [];
     for (let $y = 1; $y < 4; $y++){
         for(let $x = 1; $x < 4; $x++){
@@ -94,10 +94,10 @@ function updateWinPage(){
 
 function updateStatsBoard(){
     $.getJSON("main.php?dailyStatsDoku=" + dailyDate.replaceAll("-", "") +"&token=" + userToken , function (data){
-        console.log(data);
+        //console.log(data);
         results = data;
         let list = sortStatList(data.answers);
-        console.log(list)
+        //console.log(list)
         sortedAnswers = list;
         for (let y = 1; y < 4; y++){
             for (let x = 1; x < 4; x++){
@@ -145,7 +145,7 @@ function updateCategories(){
     searchAjax =  $.getJSON("main.php?dailydoku=" + dailyDate.replaceAll("-", ""),
         function (cats) {
         categories = cats;
-        console.log(cats);
+        //console.log(cats);
         for (let i = 0; i<3;i++){
             let id = i+1;
             let side = i+3;
@@ -243,7 +243,7 @@ function toggleWelcomeScreen(){
 function togglePlayerResults(event){
     document.getElementById("boardStats").classList.add("d-none");
     document.getElementById("board").classList.remove("d-none");
-    console.log(guessList);
+    //console.log(guessList);
 }
 
 function toggleAllResults(event){
@@ -301,16 +301,16 @@ function goToBgdle(){
 function setResults(pos){
     let posName= "doku"+pos;
     let percent = 0;
-    console.log(results.totals[posName]);
+    //console.log(results.totals[posName]);
     if(results.total !== 0 && results.totals[posName] !== undefined) {
         percent = Math.round(results.totals[posName] * 10000 / results.total) / 100;
 
-        console.log(percent);
+        //console.log(percent);
     }
     document.getElementById("searchTitle").innerHTML = percent + "% of people found a game.";
-    console.log(guessList);
+    //console.log(guessList);
     let id = guessList[posName] ? guessList[posName].id : 0;
-    console.log(id);
+    //console.log(id);
     setSearchedGames(sortedAnswers[posName], false, true, results.totals[posName], id);
 }
 
