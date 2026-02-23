@@ -160,7 +160,7 @@ class BGdle
                 }
             }
         }
-        if($insert && $this->DB->insertDailyDoku(array_merge($dailyDokuRow, $dailyDokuCol), date("Ymd"))) {
+        if($insert && $this->DB->insertDailyDoku(array_merge($dailyDokuRow, $dailyDokuCol), date('Ymd',strtotime("+1 days")))) {
             for ($i = 0; $i < $result['gameReq']; $i++) {
                 $step = $result['gameReq'];
                 $grid = [];
